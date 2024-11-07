@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Apps.App.Dtos
+namespace Apps.Widn.Dtos
 {
     public class TextTranslation
     {

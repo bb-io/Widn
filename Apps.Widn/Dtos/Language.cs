@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Apps.App.Dtos
+namespace Apps.Widn.Dtos
 {
-    public class Error
+    public class Language
     {
+        public string Locale { get; set; }
         public string Name { get; set; }
-        public string Message { get; set; }
+        public bool Formality { get; set; }
     }
 }

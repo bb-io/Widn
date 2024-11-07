@@ -1,9 +1,9 @@
-using Apps.App.Api;
+using Apps.Widn.Api;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Authentication;
 using Blackbird.Applications.Sdk.Common.Invocation;
 
-namespace Apps.App.Invocables;
+namespace Apps.Widn.Invocables;
 
 public class WidnInvocable : BaseInvocable
 {

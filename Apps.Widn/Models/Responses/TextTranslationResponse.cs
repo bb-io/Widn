@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Apps.App.Models.Responses
+namespace Apps.Widn.Models.Responses
 {
     public class TextTranslationResponse
     {
