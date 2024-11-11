@@ -10,7 +10,7 @@ namespace Apps.Widn.Api;
 public class WidnClient : BlackBirdRestClient
 {
     public WidnClient(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders) :
-            base(new RestClientOptions { ThrowOnAnyError = false, BaseUrl = new Uri("https://api.staging.widn.ai/v1") }) // TODO: update from staging
+            base(new RestClientOptions { ThrowOnAnyError = false, BaseUrl = new Uri("https://api.widn.ai/v1") })
     {
         this.AddDefaultHeader("x-api-key", authenticationCredentialsProviders.First(x => x.KeyName == CredsNames.ApiKey).Value);
     }
