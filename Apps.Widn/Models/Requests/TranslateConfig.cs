@@ -31,7 +31,7 @@ namespace Apps.Widn.Models.Requests
         [Display("Model")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         [StaticDataSource(typeof(ModelDataHandler))]
-        public string? Model { get; set; }
+        public string Model { get; set; }
 
         [Display("Instructions")]
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

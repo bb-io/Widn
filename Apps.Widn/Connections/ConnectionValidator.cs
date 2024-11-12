@@ -17,7 +17,7 @@ public class ConnectionValidator: IConnectionValidator
         var request = new RestRequest("/translate", Method.Post);
         request.AddJsonBody(new
         {
-            config = new TranslateConfig { SourceLocale = "es", TargetLocale = "en" },
+            config = new TranslateConfig { SourceLocale = "es", TargetLocale = "en", Model = "sugarloaf" },
             sourceText = new List<string> { "Hola" },
         });
 
