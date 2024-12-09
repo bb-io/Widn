@@ -30,6 +30,11 @@ Before you can connect you need to make sure that:
 
 Widen offers translation inputs for model selection, tone, extra instructions and a glossary.
 
+### Glossaries 
+
+- **Import glossary** imports glossary (.tbx, .csv & .tsv).
+- **Export glossary** exports glossary
+
 ## Feedback
 
 Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.

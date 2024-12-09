@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Product>Widn</Product>
         <Description>Accurate translations, preserving meaning and nuance across +20 language pairs and various domains.</Description>
-        <Version>1.0.2</Version>
+        <Version>1.0.3</Version>
         <AssemblyName>Apps.Widn</AssemblyName>
     </PropertyGroup>
 
@@ -22,6 +22,7 @@
 
     <ItemGroup>
         <PackageReference Include="Blackbird.Applications.Sdk.Common" Version="2.11.0" />
+        <PackageReference Include="Blackbird.Applications.Sdk.Glossaries.Utils" Version="1.0.2-alpha1" />
         <PackageReference Include="Blackbird.Applications.Sdk.Utils" Version="1.0.25" />
     </ItemGroup>
 

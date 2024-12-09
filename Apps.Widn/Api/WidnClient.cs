@@ -1,6 +1,7 @@
 using Apps.Widn.Constants;
 using Apps.Widn.Dtos;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
 using RestSharp;
@@ -34,4 +35,31 @@ public class WidnClient : BlackBirdRestClient
             return new($"Failed to parse error response. Content: {response.Content}");
         }
     }
+
+    public async Task<List<T>> Paginate<T>(RestRequest request)
+    {
+        var pageToken = "";
+        //var limit = 200;
+
+        var baseUrl = request.Resource; //.SetQueryParameter("maxReturn", limit.ToString());
+
+        var result = new List<T>();
+        BaseResponseDto<T> response;
+        do
+        {
+            if(!string.IsNullOrEmpty(pageToken))
+                request.Resource = baseUrl.SetQueryParameter("pageToken", pageToken);
+
+            response = await ExecuteWithErrorHandling<BaseResponseDto<T>>(request);
+
+            if (pageToken == response.NextPageToken)
+                break;
+
+            result.AddRange(response.Results ?? Enumerable.Empty<T>());
+            pageToken = response.NextPageToken;
+        } while (response.Results?.Any() is true);
+
+        return result;
+    }
+
 }
