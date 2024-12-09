@@ -14,11 +14,11 @@ public class ImportGlossaryRequest
     public string? Name { get; set; }
 
     [Display("Source language", Description = "Widn glossary structure is key-value. Key is your source language.\nMake sure exported glossary has this language")]
-    [StaticDataSource(typeof(LanguageDataHandler))]
+    [DataSource(typeof(LanguageDataHandler))]
     public string? SourceLanguageCode { get; set; }
 
     [Display("Target language", Description = "Widn glossary structure is key-value. Value is your target language.\nMake sure exported glossary has this language")]
-    [StaticDataSource(typeof(LanguageDataHandler))]
+    [DataSource(typeof(LanguageDataHandler))]
     public string? TargetLanguageCode { get; set; }
 
     [Display("Glossary ID", Description = "Import data to specified glossary")]
