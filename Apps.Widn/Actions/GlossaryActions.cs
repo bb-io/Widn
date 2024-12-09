@@ -15,6 +15,7 @@ using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
 using DocumentFormat.OpenXml.Office2016.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Blackbird.Applications.Sdk.Common.Exceptions;
+using System.Linq;
 
 namespace Apps.Widn.Actions;
 
@@ -31,7 +32,7 @@ public class GlossaryActions : WidnInvocable
     [Action("Export glossary", Description = "Export glossary")]
     public async Task<ExportGlossaryResponse> ExportGlossary([ActionParameter] ExportGlossaryRequest input)
     {
-        var endpointGlossaryData = $"/glossary/{input.GlossaryId}/item​";
+        var endpointGlossaryData = $"/glossary/{input.GlossaryId}/item";
         var requestGlossaryData = new RestRequest(endpointGlossaryData, Method.Get);
         var responseGlossaryData = await Client.Paginate<GlossaryItemDto>(requestGlossaryData);
 
@@ -78,10 +79,10 @@ public class GlossaryActions : WidnInvocable
         var (glossaryEntries, glossaryTitle) = fileExtension switch
         {
             ".tbx" => await GetEntriesFromTbx(input, glossaryStream),
-            //".csv" => GetEntriesFromCsv(request, glossaryStream),
-            //".tsv" => GetEntriesFromTsv(request, glossaryStream),
-            //_ => throw new Exception($"Glossary format not supported ({fileExtension})." +
-            //                         "Supported file extensions include .tbx, .csv & .tsv")
+            ".csv" => GetEntriesFromCsv(input, glossaryStream),
+            ".tsv" => GetEntriesFromTsv(input, glossaryStream),
+            _ => throw new PluginMisconfigurationException($"Glossary format not supported ({fileExtension})." +
+                                     "Supported file extensions include .tbx, .csv & .tsv")
         };
 
         RestRequest createOrUpdateGlossary = new RestRequest();
@@ -153,47 +154,48 @@ public class GlossaryActions : WidnInvocable
             request.Name ?? blackbirdGlossary.Title!);
     }
 
-    //private (GlossaryEntries entries, string name) GetEntriesFromCsv(ImportGlossaryRequest request,
-    //    Stream glossaryStream)
-    //{
-    //    var lines = new List<string>();
-    //    using (StreamReader reader = new StreamReader(glossaryStream))
-    //    {
-    //        while (!reader.EndOfStream)
-    //        {
-    //            lines.Add(reader.ReadLine()!);
-    //        }
-    //    }
+    private (List<GlossaryNewItemDto> entries, string name) GetEntriesFromCsv(ImportGlossaryRequest request,
+        Stream glossaryStream)
+    {
+        var lines = new List<string>();
+        using (StreamReader reader = new StreamReader(glossaryStream))
+        {
+            while (!reader.EndOfStream)
+            {
+                lines.Add(reader.ReadLine()!);
+            }
+        }
 
-    //    var entries = new List<KeyValuePair<string, string>>();
-    //    foreach (var line in lines)
-    //    {
-    //        entries.Add(new KeyValuePair<string, string>(line.Split(',')[0], line.Split(',')[1]));
-    //    }
+        var entries = new List<KeyValuePair<string, string>>();
+        foreach (var line in lines)
+        {
+            entries.Add(new KeyValuePair<string, string>(line.Split(',')[0], line.Split(',')[1]));
+        }
 
-    //    return (new GlossaryEntries(entries.DistinctBy(x => x.Key)), request.Name ?? request.File.Name);
-    //}
+        return (entries.DistinctBy(x => x.Key).Select(x => new GlossaryNewItemDto() { Term = x.Key, Translation = x.Value }).ToList(), request.Name ?? request.File.Name);
+    }
 
-    //private (GlossaryEntries entries, string name) GetEntriesFromTsv(ImportGlossaryRequest request,
-    //    Stream glossaryStream)
-    //{
-    //    var tsvLines = new List<string>();
-    //    using (StreamReader reader = new StreamReader(glossaryStream))
-    //    {
-    //        while (!reader.EndOfStream)
-    //        {
-    //            tsvLines.Add(reader.ReadLine()!);
-    //        }
-    //    }
+    private (List<GlossaryNewItemDto> entries, string name) GetEntriesFromTsv(ImportGlossaryRequest request,
+        Stream glossaryStream)
+    {
+        var tsvLines = new List<string>();
+        using (StreamReader reader = new StreamReader(glossaryStream))
+        {
+            while (!reader.EndOfStream)
+            {
+                tsvLines.Add(reader.ReadLine()!);
+            }
+        }
 
-    //    var tsvEntries = new List<KeyValuePair<string, string>>();
-    //    foreach (var line in tsvLines)
-    //    {
-    //        tsvEntries.Add(new KeyValuePair<string, string>(line.Split('\t')[0], line.Split('\t')[1]));
-    //    }
+        var tsvEntries = new List<KeyValuePair<string, string>>();
+        foreach (var line in tsvLines)
+        {
+            tsvEntries.Add(new KeyValuePair<string, string>(line.Split('\t')[0], line.Split('\t')[1]));
+        }
 
-    //    return (new GlossaryEntries(tsvEntries.DistinctBy(x => x.Key)), request.Name ?? request.File.Name);
-    //}
+        return (tsvEntries.DistinctBy(x => x.Key).Select(x => new GlossaryNewItemDto() { Term = x.Key, Translation = x.Value }).ToList(), request.Name ?? request.File.Name);
+    }
+
     private string CleanText(string input)
     {
         return input.Replace("\r", "").Replace("\n", " ").Replace("\u2028", "");
