@@ -118,7 +118,7 @@ public class GlossaryActions : WidnInvocable
         await Client.ExecuteWithErrorHandling(createOrUpdateGlossary);
     }
 
-    private async Task<(List<GlossaryItemDto> entries, string name)> GetEntriesFromTbx(ImportGlossaryRequest request,
+    private async Task<(List<GlossaryNewItemDto> entries, string name)> GetEntriesFromTbx(ImportGlossaryRequest request,
         Stream glossaryStream)
     {
         var blackbirdGlossary = await glossaryStream.ConvertFromTbx();
@@ -149,7 +149,7 @@ public class GlossaryActions : WidnInvocable
             glossaryValues.Add(new KeyValuePair<string, string>(cleanTermSource, cleanTermTarget));
         }
 
-        return (glossaryValues.DistinctBy(x => x.Key).Select(x => new GlossaryItemDto() { Term = x.Key, Translation = x.Value}).ToList(),
+        return (glossaryValues.DistinctBy(x => x.Key).Select(x => new GlossaryNewItemDto() { Term = x.Key, Translation = x.Value}).ToList(),
             request.Name ?? blackbirdGlossary.Title!);
     }
 
