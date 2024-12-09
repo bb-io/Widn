@@ -73,8 +73,19 @@ public class GlossaryActions : WidnInvocable
     [Action("Import glossary", Description = "Import glossary")]
     public async Task ImportGlossary([ActionParameter] ImportGlossaryRequest input)
     {
+        var endpointGlossary = $"/glossary/{input.GlossaryId}";
+
         await using var glossaryStream = await _fileManagementClient.DownloadAsync(input.File);
         var fileExtension = Path.GetExtension(input.File.Name);
+
+        var existingGlossaryDetails = new GlossaryDto();
+        if (input.GlossaryId != null)
+        {
+            var requestGlossaryDetails = new RestRequest(endpointGlossary, Method.Get);
+            existingGlossaryDetails = await Client.ExecuteWithErrorHandling<GlossaryDto>(requestGlossaryDetails);
+            input.SourceLanguageCode = existingGlossaryDetails.SourceLocale;
+            input.TargetLanguageCode = existingGlossaryDetails.TargetLocale;
+        }
 
         var (glossaryEntries, glossaryTitle) = fileExtension switch
         {
@@ -88,16 +99,12 @@ public class GlossaryActions : WidnInvocable
         RestRequest createOrUpdateGlossary = new RestRequest();
         if (input.GlossaryId != null)
         {
-            var endpointGlossary = $"/glossary/{input.GlossaryId}";
-            var requestGlossaryDetails = new RestRequest(endpointGlossary, Method.Get);
-            var responseGlossaryDetails = await Client.ExecuteWithErrorHandling<GlossaryDto>(requestGlossaryDetails);
-
             createOrUpdateGlossary = new RestRequest(endpointGlossary, Method.Put);
             createOrUpdateGlossary.AddBody(new
             {
-                name = responseGlossaryDetails.Name,
-                sourceLocale = responseGlossaryDetails.SourceLocale,
-                targetLocale = responseGlossaryDetails.TargetLocale,
+                name = existingGlossaryDetails.Name,
+                sourceLocale = existingGlossaryDetails.SourceLocale,
+                targetLocale = existingGlossaryDetails.TargetLocale,
                 items = glossaryEntries
             });
         }
