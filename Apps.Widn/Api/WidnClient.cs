@@ -53,6 +53,9 @@ public class WidnClient : BlackBirdRestClient
             response = await ExecuteWithErrorHandling<BaseResponseDto<T>>(request);
             result.AddRange(response.Results ?? Enumerable.Empty<T>());
 
+            if (pageToken == response.NextPageToken)
+                break;
+
             pageToken = response.NextPageToken;
         } while (response.Results?.Any() is true);
 
