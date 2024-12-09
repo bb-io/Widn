@@ -75,10 +75,6 @@ public class GlossaryActions : WidnInvocable
         await using var glossaryStream = await _fileManagementClient.DownloadAsync(input.File);
         var fileExtension = Path.GetExtension(input.File.Name);
 
-        var endpointGlossary = $"/glossary/{input.GlossaryId}";
-        var requestGlossaryDetails = new RestRequest(endpointGlossary, Method.Get);
-        var responseGlossaryDetails = await Client.ExecuteWithErrorHandling<GlossaryDto>(requestGlossaryDetails);
-
         var (glossaryEntries, glossaryTitle) = fileExtension switch
         {
             ".tbx" => await GetEntriesFromTbx(input, glossaryStream),
@@ -91,6 +87,10 @@ public class GlossaryActions : WidnInvocable
         RestRequest createOrUpdateGlossary = new RestRequest();
         if (input.GlossaryId != null)
         {
+            var endpointGlossary = $"/glossary/{input.GlossaryId}";
+            var requestGlossaryDetails = new RestRequest(endpointGlossary, Method.Get);
+            var responseGlossaryDetails = await Client.ExecuteWithErrorHandling<GlossaryDto>(requestGlossaryDetails);
+
             createOrUpdateGlossary = new RestRequest(endpointGlossary, Method.Put);
             createOrUpdateGlossary.AddBody(new
             {
