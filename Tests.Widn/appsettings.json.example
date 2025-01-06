@@ -1,7 +1,6 @@
 {
     "ConnectionDefinition": {
-        "apiKey": "YOUR_API_KEY",
-        "url": "YOUR_URL"
+        "ApiKey": "YOUR_API_KEY"
     },
     "TestFolder": "YOUR_TEST_FOLDER"
 }
