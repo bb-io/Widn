@@ -1,6 +1,7 @@
 using Apps.Widn.Constants;
 using Apps.Widn.Dtos;
 using Blackbird.Applications.Sdk.Common.Authentication;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.Sdk.Utils.RestSharp;
 using Newtonsoft.Json;
@@ -22,6 +23,11 @@ public class WidnClient : BlackBirdRestClient
         {
             var json = response.Content!;
             var error = JsonConvert.DeserializeObject<Error>(json)!;
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                return new PluginMisconfigurationException("To use Widn API, please sign up for an API subscription or check your access.");
+            }
 
             if (error.Fields != null && error.Fields.Any())
             {
