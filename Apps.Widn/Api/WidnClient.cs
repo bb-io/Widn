@@ -1,3 +1,4 @@
+using System.Net;
 using Apps.Widn.Constants;
 using Apps.Widn.Dtos;
 using Blackbird.Applications.Sdk.Common.Authentication;
@@ -19,27 +20,26 @@ public class WidnClient : BlackBirdRestClient
 
     protected override Exception ConfigureErrorException(RestResponse response)
     {
-        try
+        if (response.Content is null)
         {
-            var json = response.Content!;
-            var error = JsonConvert.DeserializeObject<Error>(json)!;
-
-            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
-            {
-                return new PluginMisconfigurationException("To use Widn API, please sign up for an API subscription or check your access.");
-            }
-
-            if (error.Fields != null && error.Fields.Any())
-            {
-                return new(string.Join(", ", error.Fields.Values.Select(x => x.Message)));
-            }
-
-            return new($"{error.StatusCode} {error.Name} {error.Message}");
+            return new PluginApplicationException($"Error: {response.ErrorMessage}");
         }
-        catch (Exception)
+
+        var error = JsonConvert.DeserializeObject<Error>(response.Content, JsonSettings);
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
         {
-            return new($"Failed to parse error response. Content: {response.Content}");
+            return new PluginMisconfigurationException("Please sign up for an API subscription or check your access.");
         }
+
+        if (error.Fields != null && error.Fields.Any())
+        {
+            var fieldsMessage = string.Join(", ", error.Fields.Values.Select(x => x.Message));
+            return new PluginMisconfigurationException(fieldsMessage);
+        }
+
+        return new PluginApplicationException($"Error: {response.ErrorMessage}");
+
     }
 
     public async Task<List<T>> Paginate<T>(RestRequest request)
