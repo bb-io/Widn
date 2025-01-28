@@ -15,7 +15,9 @@ public class WidnClient : BlackBirdRestClient
     public WidnClient(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders) :
             base(new RestClientOptions { ThrowOnAnyError = false, BaseUrl = new Uri("https://api.widn.ai/v1") })
     {
-        this.AddDefaultHeader("x-api-key", authenticationCredentialsProviders.First(x => x.KeyName == CredsNames.ApiKey).Value);
+        this.AddDefaultHeader("x-api-key", authenticationCredentialsProviders.First(x => x.KeyName == CredsNames.ApiKey).Value);  
+        // Add the X-Widn-App header
+        this.AddDefaultHeader("X-Widn-App", CredsNames.BlackBird);
     }
 
     protected override Exception ConfigureErrorException(RestResponse response)
