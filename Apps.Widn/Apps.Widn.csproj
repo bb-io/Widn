@@ -6,7 +6,7 @@
         <Nullable>enable</Nullable>
         <Product>Widn</Product>
         <Description>Accurate translations, preserving meaning and nuance across +20 language pairs and various domains.</Description>
-        <Version>1.0.5</Version>
+        <Version>1.0.6</Version>
         <AssemblyName>Apps.Widn</AssemblyName>
     </PropertyGroup>
 
