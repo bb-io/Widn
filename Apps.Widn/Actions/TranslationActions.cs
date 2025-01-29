@@ -9,6 +9,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
+using System.Net.Mime;
 
 namespace Apps.Widn.Actions;
 
@@ -84,21 +85,16 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
                 break;
 
             if (statusRes.Status is "failed" or "cancelled")
-                throw new PluginApplicationException($"Translation failed or cancelled. Status={statusRes.Status}");
+                throw new PluginApplicationException(statusRes.Error);
+
+            var otherAllowedStatusses = new List<string>() { "created", "preprocess", "translating", "rebuilding" };
+            if (!otherAllowedStatusses.Contains(statusRes.Status))
+                throw new Exception($"Unknown status: {statusRes.Status}");
         }
 
+        var downloadRequest = Client.CreateDownloadRequest(fileId, encryptionKey);
+        var fileReference = new FileReference(downloadRequest, file.Name, file.ContentType);
 
-        var downloadReq = new RestRequest($"/translate-file/{fileId}/download", Method.Get);
-        downloadReq.AddQueryParameter("encryptionKey", encryptionKey);
-        var translatedFileBytes = Client.DownloadData(downloadReq);
-
-        using var outputStream = new MemoryStream(translatedFileBytes);
-        var uploadedFile = await fileManagementClient.UploadAsync(
-            outputStream,
-            file.ContentType,
-            file.Name
-        );
-
-        return new FileTranslationResponse { File = uploadedFile };
+        return new FileTranslationResponse { File = fileReference };
     }
 }
