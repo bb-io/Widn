@@ -93,9 +93,17 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
                 throw new Exception($"Unknown status: {statusRes.Status}");
         }
 
-        var downloadRequest = Client.CreateDownloadRequest(fileId, encryptionKey);
-        var fileReference = new FileReference(downloadRequest, file.Name, file.ContentType);
+        var downloadReq = new RestRequest($"/translate-file/{fileId}/download", Method.Get);
+        downloadReq.AddQueryParameter("encryptionKey", encryptionKey);
+        var translatedFileBytes = Client.DownloadData(downloadReq);
 
-        return new FileTranslationResponse { File = fileReference };
+        using var outputStream = new MemoryStream(translatedFileBytes);
+        var uploadedFile = await fileManagementClient.UploadAsync(
+            outputStream,
+            file.ContentType,
+            file.Name
+        );
+
+        return new FileTranslationResponse { File = uploadedFile };
     }
 }
