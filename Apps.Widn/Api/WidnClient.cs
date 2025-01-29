@@ -12,12 +12,23 @@ namespace Apps.Widn.Api;
 
 public class WidnClient : BlackBirdRestClient
 {
+    private string apiKey;
+
     public WidnClient(IEnumerable<AuthenticationCredentialsProvider> authenticationCredentialsProviders) :
             base(new RestClientOptions { ThrowOnAnyError = false, BaseUrl = new Uri("https://api.widn.ai/v1") })
     {
-        this.AddDefaultHeader("x-api-key", authenticationCredentialsProviders.First(x => x.KeyName == CredsNames.ApiKey).Value);  
+        var apiKey = authenticationCredentialsProviders.First(x => x.KeyName == CredsNames.ApiKey).Value;
+        this.AddDefaultHeader("x-api-key", apiKey);  
         // Add the X-Widn-App header
         this.AddDefaultHeader("X-Widn-App", CredsNames.BlackBird);
+    }
+
+    public HttpRequestMessage CreateDownloadRequest(string fileId, string encryptionKey)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.widn.ai/v1/translate-file/{fileId}/download?encryptionKey={encryptionKey}");
+        request.Headers.Add("x-api-key", apiKey);
+        request.Headers.Add("X-Widn-App", CredsNames.BlackBird);
+        return request;
     }
 
     protected override Exception ConfigureErrorException(RestResponse response)
