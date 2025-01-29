@@ -1,6 +1,8 @@
 ﻿using Apps.Widn.Actions;
 using Apps.Widn.DataSources;
+using Apps.Widn.Models.Requests;
 using Blackbird.Applications.Sdk.Common.Dynamic;
+using Blackbird.Applications.Sdk.Common.Files;
 using Tests.Widn.Base;
 
 namespace Tests.Widn
@@ -25,6 +27,19 @@ namespace Tests.Widn
             {
                 Console.WriteLine($"{item.Value}: {item.DisplayName}");
             }
+        }
+
+        [TestMethod]
+        public async Task TranslateFileReturnsValues()
+        {
+            var action = new TranslationActions(InvocationContext,FileManager);
+
+            var input1 = new TranslateConfig { SourceLocale = "en", TargetLocale = "uk", Model= "vesuvius", Tone="formal" };
+            var input2 = new FileReference { Name= "some.docx"};
+
+            var result = await action.TranslateFile(input2,input1);
+
+            Assert.IsNotNull(result, "Response should not be null");
         }
     }
 }
