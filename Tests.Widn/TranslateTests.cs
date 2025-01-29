@@ -22,7 +22,7 @@ public class TranslateTests : TestBase
         var input1 = new TranslateConfig { SourceLocale = "en", TargetLocale = "pt-PT", Model = "vesuvius", Tone = "formal" };
         var input2 = new FileReference { Name = "some.docx" };
 
-        var result = await action.TranslateFile(input2, input1);
+        var result = await action.TranslateFile(new FileRequest { File = input2 }, input1);
 
         Assert.IsNotNull(result, "Response should not be null");
     }

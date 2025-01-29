@@ -37,9 +37,10 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
     }
 
     [Action("Translate file", Description = "Translate a file by using model")]
-    public async Task<FileTranslationResponse> TranslateFile([ActionParameter][Display("File")] FileReference file,
+    public async Task<FileTranslationResponse> TranslateFile([ActionParameter] FileRequest fileRequest,
         [ActionParameter] TranslateConfig config)
     {
+        var file = fileRequest.File;
         var supportedFormats = new[]
         {
             "csv", "dita", "ditamap", "docm", "docx", "dtd", "htm", "html", "icml",
