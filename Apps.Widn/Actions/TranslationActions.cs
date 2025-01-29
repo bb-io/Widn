@@ -8,7 +8,6 @@ using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
-using DocumentFormat.OpenXml.Office2016.Excel;
 using RestSharp;
 
 namespace Apps.Widn.Actions;
@@ -17,7 +16,7 @@ namespace Apps.Widn.Actions;
 public class TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : WidnInvocable(invocationContext)
 {
     [Action("Translate text", Description = "Translate a text by using model")]
-    public async Task<TextTranslationResponse> TranslateText([ActionParameter] [Display("Source text")] string source, [ActionParameter] TranslateConfig config)
+    public async Task<TextTranslationResponse> TranslateText([ActionParameter][Display("Source text")] string source, [ActionParameter] TranslateConfig config)
     {
         var request = new RestRequest("/translate", Method.Post);
         request.AddJsonBody(new
@@ -40,6 +39,20 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
     public async Task<FileTranslationResponse> TranslateFile([ActionParameter][Display("File")] FileReference file,
         [ActionParameter] TranslateConfig config)
     {
+        var supportedFormats = new[]
+        {
+            "csv", "dita", "ditamap", "docm", "docx", "dtd", "htm", "html", "icml",
+            "idml", "json", "markdown", "md", "mif", "mqxliff", "mxliff", "odp",
+            "ods", "odt", "ots", "po", "potm", "potx", "ppsm", "ppsx", "pptm",
+            "pptx", "properties", "resx", "sdlxliff", "strings", "stringsdict",
+            "tmx", "tsv", "vsdx", "xml", "yaml", "yml"
+        };
+        var fileExtension = Path.GetExtension(file.Name)?.TrimStart('.').ToLower();
+        if (string.IsNullOrEmpty(fileExtension) || !supportedFormats.Contains(fileExtension))
+        {
+            throw new PluginMisconfigurationException($"Unsupported file format: '{fileExtension}'. Supported formats are: {string.Join(", ", supportedFormats)}");
+        }
+
         using var inputFileStream = await fileManagementClient.DownloadAsync(file);
         using var memoryStream = new MemoryStream();
         await inputFileStream.CopyToAsync(memoryStream);
@@ -56,14 +69,7 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
         var translateReq = new RestRequest($"/translate-file/{fileId}/translate", Method.Post);
         translateReq.AddJsonBody(new
         {
-            config = new
-            {
-                sourceLocale = config.SourceLocale,
-                targetLocale = config.TargetLocale,
-                instructions = config.Instructions,
-                glossaryId = config.GlossaryId,
-                //
-            }
+            config
         });
 
         await Client.ExecuteWithErrorHandling(translateReq);
@@ -78,7 +84,7 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
                 break;
 
             if (statusRes.Status is "failed" or "cancelled")
-                throw new Exception($"Translation failed or cancelled. Status={statusRes.Status}");
+                throw new PluginApplicationException($"Translation failed or cancelled. Status={statusRes.Status}");
         }
 
 
@@ -95,7 +101,4 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
 
         return new FileTranslationResponse { File = uploadedFile };
     }
-
-
-
 }
