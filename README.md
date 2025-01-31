@@ -1,42 +1,48 @@
-# Blackbird.io Widn
+# Widn + Blackbird Draft Page
 
-Blackbird is the new automation backbone for the language technology industry. Blackbird provides enterprise-scale automation and orchestration with a simple no-code/low-code platform. Blackbird enables ambitious organizations to identify, vet and automate as many processes as possible. Not just localization workflows, but any business and IT process. This repository represents an application that is deployable on Blackbird and usable inside the workflow editor.
+**Widn is** translation AI for everyone. Widn’s AI provides accurate translations, preserving meaning, maintaining brand voice, and cultural nuances across +20 language pairs and various domains.
 
-## Introduction
+## **Before Setting Up**
 
-<!-- begin docs -->
+- After signing in at [https://www.widn.ai/](https://www.widn.ai/), go to the toolbar on the left and click on **API Key.**
+- Follow the steps under **Get Started** to complete the setup.
+- Generate your API key.
 
-Widn is a translation AI providing accurate translations, preserving meaning and nuance across +20 language pairs and various domains.
+## **Connecting**
 
-## Before setting up
+1. Navigate to **Apps** and identify the Widn app. You can use the search to find it.
+2. Click *Add Connection*.
+3. Name your connection for future reference, e.g., "My Widn connection."
+4. Fill in the API key from your Widn account.
+5. Click *Connect*.
 
-Before you can connect you need to make sure that:
+## **Actions**
 
-- You have access to a Widn API key.
+### **Translation**
 
-## Connecting
+- **Translate Text** translates plain text.
 
-1. Navigate to Apps, and identify the Widn app. You can use search to find it.
-2. Click _Add Connection_.
-3. Name your connection for future reference e.g. 'My Widn connection'.
-4. Fill in the API key to your Widn account.
-5. Click _Connect_.
+Widn offers translation inputs for model selection, extra instructions, and a glossary.
 
-## Actions
+![Frame 1](https://prod-files-secure.s3.us-west-2.amazonaws.com/9ef5dbae-8448-4c4b-8529-6d2b2d2d336f/2ef17828-1437-4c26-bf9b-1d1d95b0feef/Frame_1.png)
 
-### Translation 
+You can now translate files by uploading your file with the source and target languages. XLIFF translation is already available via the Widn API, alongside PDF and these other file types: [Supported File Formats](https://help.unbabel.com/hc/en-us/articles/11241362647447-Supported-file-formats).
 
-- **Translate text** translates plain text.
+## **Examples**
 
-Widen offers translation inputs for model selection, tone, extra instructions and a glossary.
+### Slack Bird
 
-### Glossaries 
+![Slack Example](https://prod-files-secure.s3.us-west-2.amazonaws.com/9ef5dbae-8448-4c4b-8529-6d2b2d2d336f/bc0f9cca-cd94-4379-931d-d54ea62d828f/image.png)
 
-- **Import glossary** imports glossary (.tbx, .csv & .tsv).
-- **Export glossary** exports glossary
+The example shows Widn AI being used as a Slack integration.
 
-## Feedback
+### Email Bird
 
-Do you want to use this app or do you have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.
+![Email Example](https://prod-files-secure.s3.us-west-2.amazonaws.com/9ef5dbae-8448-4c4b-8529-6d2b2d2d336f/c33adb47-4a27-46af-a7ec-4a6a4fcc7f8a/image.png)
 
-<!-- end docs -->
+**Example**: Whenever a new email comes in, it is sent for translation using [widn.ai](http://widn.ai/). Afterward, it is sent to a Slack channel with the email translated into the desired language. This is another way you can utilize [widn.ai](http://widn.ai/).
+
+## **Feedback**
+
+Do you want to use this app or have feedback on our implementation? Reach out to us using the [established channels](https://www.blackbird.io/) or create an issue.
+
