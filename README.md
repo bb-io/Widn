@@ -24,7 +24,7 @@
 
 Widn offers translation inputs for model selection, extra instructions, and a glossary.
 
-![Frame 1](https://prod-files-secure.s3.us-west-2.amazonaws.com/9ef5dbae-8448-4c4b-8529-6d2b2d2d336f/2ef17828-1437-4c26-bf9b-1d1d95b0feef/Frame_1.png)
+![Frame 1](image/README/Instructions.png)
 
 You can now translate files by uploading your file with the source and target languages. XLIFF translation is already available via the Widn API, alongside PDF and these other file types: [Supported File Formats](https://help.unbabel.com/hc/en-us/articles/11241362647447-Supported-file-formats).
 
@@ -32,13 +32,13 @@ You can now translate files by uploading your file with the source and target la
 
 ### Slack Bird
 
-![Slack Example](https://prod-files-secure.s3.us-west-2.amazonaws.com/9ef5dbae-8448-4c4b-8529-6d2b2d2d336f/bc0f9cca-cd94-4379-931d-d54ea62d828f/image.png)
+![Slack Example](image/README/SlackBird.png)
 
 The example shows Widn AI being used as a Slack integration.
 
 ### Email Bird
 
-![Email Example](https://prod-files-secure.s3.us-west-2.amazonaws.com/9ef5dbae-8448-4c4b-8529-6d2b2d2d336f/c33adb47-4a27-46af-a7ec-4a6a4fcc7f8a/image.png)
+![Email Example](image/README/EmailBird.png)
 
 **Example**: Whenever a new email comes in, it is sent for translation using [widn.ai](http://widn.ai/). Afterward, it is sent to a Slack channel with the email translated into the desired language. This is another way you can utilize [widn.ai](http://widn.ai/).
 
