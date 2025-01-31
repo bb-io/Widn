@@ -1,11 +1,10 @@
-# Widn + Blackbird Draft Page
+# Widn
 
 **Widn is** translation AI for everyone. Widn’s AI provides accurate translations, preserving meaning, maintaining brand voice, and cultural nuances across +20 language pairs and various domains.
 
 ## **Before Setting Up**
 
 - After signing in at [https://www.widn.ai/](https://www.widn.ai/), go to the toolbar on the left and click on **API Key.**
-- Follow the steps under **Get Started** to complete the setup.
 - Generate your API key.
 
 ## **Connecting**
