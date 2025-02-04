@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -71,7 +72,7 @@ namespace Apps.Widn.Actions
             if (input.File == null)
                 throw new PluginMisconfigurationException("XLIFF file cannot be null. Please provide a valid file.");
             if (string.IsNullOrWhiteSpace(input.ReferenceText))
-                throw new PluginMisconfigurationException("Reference Text cannot be null or empty. Please check your input.");
+                throw new PluginMisconfigurationException("Reference text cannot be null or empty. Please check your input.");
 
             var fileStream = await _fileManagementClient.DownloadAsync(input.File);
 
@@ -95,8 +96,41 @@ namespace Apps.Widn.Actions
 
             var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
 
+
             double finalScore = response.Segments?.Average(s => s.Score) ?? 0;
-            return new QualityEvaluateResponse { Score = finalScore };
+
+            var file = await _fileManagementClient.DownloadAsync(input.File);
+            string fileContent;
+            Encoding encoding;
+            using (var inFileStream = new StreamReader(file, true))
+            {
+                encoding = inFileStream.CurrentEncoding;
+                fileContent = inFileStream.ReadToEnd();
+            }
+
+            var segmentScores = response.Segments.ToList();
+            for (int i = 0; i < segments.Count; i++)
+            {
+                if (!string.IsNullOrWhiteSpace(segments[i].ID))
+                {
+                    double segScore = segmentScores.Count > i ? segmentScores[i].Score ?? 0 : 0;
+                    fileContent = Regex.Replace(
+                        fileContent,
+                        @"(<trans-unit id=""" + Regex.Escape(segments[i].ID) + @""")",
+                        "$1 extradata=\"" + segScore + "\"");
+                }
+            }
+
+            fileContent = Regex.Replace(fileContent, @"<xliff", $"<xliff averageScore=\"{finalScore}\"");
+
+            var modifiedFileStream = new MemoryStream(encoding.GetBytes(fileContent));
+            var fileReference = await _fileManagementClient.UploadAsync(modifiedFileStream, MediaTypeNames.Text.Xml, input.File.Name);
+
+            return new QualityEvaluateResponse
+            {
+                Score = finalScore,
+                File = fileReference
+            };
         }
 
         private List<TranslationUnit> ExtractSegmentsFromXliff(Stream inputStream)
@@ -129,8 +163,9 @@ namespace Apps.Widn.Actions
             return segments;
         }
 
-         private class TranslationUnit
+        private class TranslationUnit
         {
+            public string ID { get; set; }
             public string Source { get; set; }
             public string Target { get; set; }
         }

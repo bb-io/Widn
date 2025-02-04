@@ -14,6 +14,9 @@ namespace Apps.Widn.Models.Responses
     {
         [Display("Score")]
         public double Score { get; set; }
+
+        [Display("XLIFF file")]
+        public FileReference File { get; set; }
     }
     public class QualityEvaluate
     {
