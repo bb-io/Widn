@@ -21,10 +21,5 @@ namespace Apps.Widn.Models.Requests
         [Display("Reference text")]
         [JsonProperty("referenceText")]
         public string ReferenceText { get; set; }
-
-        [JsonProperty("model")]
-        [DefinitionIgnore]
-        public string Model { get; set; } = "xcomet-xl";
-
     }
 }

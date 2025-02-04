@@ -38,7 +38,7 @@ namespace Apps.Widn.Actions
                         referenceText = input.ReferenceText
                     }
                 },
-                model = input.Model
+                model = "xcomet-xl"
             };
 
             var restRequest = new RestRequest("/quality/evaluate", Method.Post);
