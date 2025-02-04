@@ -68,7 +68,7 @@ namespace Apps.Widn.Actions
 
 
         [Action("Estimate XLIFF translation quality", Description = "Evaluates the quality of a translation from an XLIFF file")]
-        public async Task<QualityEvaluateResponse> EstimateQualityXliff([ActionParameter] QualityEvaluateXliffRequest input)
+        public async Task<QualityEvaluateXliffResponse> EstimateQualityXliff([ActionParameter] QualityEvaluateXliffRequest input)
         {
             if (input.File == null)
                 throw new PluginMisconfigurationException("XLIFF file cannot be null. Please provide a valid file.");
@@ -127,7 +127,7 @@ namespace Apps.Widn.Actions
             var modifiedFileStream = new MemoryStream(encoding.GetBytes(fileContent));
             var fileReference = await _fileManagementClient.UploadAsync(modifiedFileStream, MediaTypeNames.Text.Xml, input.File.Name);
 
-            return new QualityEvaluateResponse
+            return new QualityEvaluateXliffResponse
             {
                 Score = finalScore,
                 File = fileReference
