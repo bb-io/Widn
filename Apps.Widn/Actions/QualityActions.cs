@@ -27,6 +27,7 @@ namespace Apps.Widn.Actions
         [Action("Estimate quality", Description = "Evaluates the quality of a translation")]
         public async Task<QualityEvaluateResponse> GetQuality([ActionParameter] QualityEvaluateRequest input)
         {
+
             var requestBody = new
             {
                 segments = new[]

@@ -35,7 +35,8 @@ public class TranslateTests : TestBase
             TargetText = "Los perros son compañeros leales que traen alegría y amor a nuestras vidas.", ReferenceText = "Hi" };
         var result = await action.GetQuality(input);
 
-        var firstSegment = result.Segments.First();
+        var firstSegment = result.Segments.FirstOrDefault();
         Console.WriteLine($"Segment score: {firstSegment.Score}");
+        Assert.IsNotNull(result);
     }
 }
