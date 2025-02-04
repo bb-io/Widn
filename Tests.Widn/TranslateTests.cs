@@ -42,4 +42,19 @@ public class TranslateTests : TestBase
         Console.WriteLine($"Final Score: {result.Score}");
         Assert.IsTrue(result.Score > 0);
     }
+
+    [TestMethod]
+    public async Task GetQualityXLIFF_ReturnsValues()
+    {
+        var action = new QualityActions(InvocationContext, FileManager);
+        var input = new QualityEvaluateXliffRequest
+        {
+            File = new FileReference { Name = "translated.xliff" },
+            ReferenceText = "Hi"
+        };
+        var result = await action.EstimateQualityXliff(input);
+        Assert.IsNotNull(result);
+        Console.WriteLine($"Final Score: {result.Score}");
+        Assert.IsTrue(result.Score > 0);
+    }
 }

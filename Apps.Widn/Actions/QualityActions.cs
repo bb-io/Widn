@@ -77,7 +77,7 @@ namespace Apps.Widn.Actions
 
             var segments = ExtractSegmentsFromXliff(fileStream);
             if (segments == null || !segments.Any())
-                throw new PluginMisconfigurationException("No trans-units found in the provided XLIFF file.");
+                throw new PluginMisconfigurationException("No segments found in the provided XLIFF file.");
 
             var requestBody = new
             {
@@ -96,7 +96,22 @@ namespace Apps.Widn.Actions
             var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
 
             double finalScore = response.Segments?.Average(s => s.Score) ?? 0;
-            return new QualityEvaluateResponse { Score = finalScore };
+
+            fileStream.Position = 0;
+            string fileContent;
+            using (var reader = new StreamReader(fileStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
+            {
+                fileContent = reader.ReadToEnd();
+            }
+            var modifiedFileContent = fileContent.Replace("<xliff", $"<xliff averageScore=\"{finalScore}\"");
+            var modifiedFileStream = new MemoryStream(Encoding.UTF8.GetBytes(modifiedFileContent));
+            var fileReference = await _fileManagementClient.UploadAsync(modifiedFileStream, "text/xml", input.File.Name);
+
+            return new QualityEvaluateResponse
+            {
+                Score = finalScore,
+                File = fileReference
+            };
         }
 
         private List<TranslationUnit> ExtractSegmentsFromXliff(Stream inputStream)

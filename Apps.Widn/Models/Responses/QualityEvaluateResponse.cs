@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.Sdk.Common.Files;
 using Newtonsoft.Json;
 
 namespace Apps.Widn.Models.Responses
@@ -13,6 +14,9 @@ namespace Apps.Widn.Models.Responses
     {
         [Display("Score")]
         public double Score { get; set; }
+
+        [Display("XLIFF file")]
+        public FileReference File { get; set; }
     }
     public class QualityEvaluate
     {
