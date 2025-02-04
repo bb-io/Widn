@@ -36,7 +36,7 @@ public class TranslateTests : TestBase
         var result = await action.GetQuality(input);
 
         var firstSegment = result.Segments.FirstOrDefault();
-        Console.WriteLine($"Segment score: {firstSegment.Score}");
+        Console.WriteLine($"Segment score: {firstSegment.Score} - {result.Segments}");
         Assert.IsNotNull(result);
     }
 }

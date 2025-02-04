@@ -24,13 +24,13 @@ namespace Apps.Widn.Models.Responses
         [Display("Segment score")]
         public double? Score { get; set; }
 
-        [JsonProperty("mqmScore")]
-        [Display("MQM score")]
-        public double? MqmScore { get; set; }
+        //[JsonProperty("mqmScore")]
+        //[Display("MQM score")]
+        //public double? MqmScore { get; set; }
 
-        [JsonProperty("errorSpans")]
-        [Display("Error spans")]
-        public IEnumerable<ErrorSpan>? ErrorSpans { get; set; }
+        //[JsonProperty("errorSpans")]
+        //[Display("Error spans")]
+        //public IEnumerable<ErrorSpan>? ErrorSpans { get; set; }
     }
 
     public class ErrorSpan
