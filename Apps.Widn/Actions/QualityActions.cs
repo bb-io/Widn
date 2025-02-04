@@ -31,7 +31,7 @@ namespace Apps.Widn.Actions
             _fileManagementClient = fileManagementClient;
         }
 
-        [Action("Estimate quality", Description = "Evaluates the quality of a translation")]
+        [Action("Estimate translation quality", Description = "Evaluates the quality of a translation")]
         public async Task<QualityEvaluateResponse> GetQuality([ActionParameter] QualityEvaluateRequest input)
         {
             if (string.IsNullOrWhiteSpace(input.SourceText))
@@ -67,7 +67,7 @@ namespace Apps.Widn.Actions
         }
 
 
-        [Action("Estimate XLIFF Quality", Description = "Evaluates the quality of a translation from an XLIFF file")]
+        [Action("Estimate XLIFF translation quality", Description = "Evaluates the quality of a translation from an XLIFF file")]
         public async Task<QualityEvaluateResponse> EstimateQualityXliff([ActionParameter] QualityEvaluateXliffRequest input)
         {
             if (input.File == null)
