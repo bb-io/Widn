@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Apps.Widn.Api;
 using Apps.Widn.Invocables;
+using Apps.Widn.Models;
 using Apps.Widn.Models.Requests;
 using Apps.Widn.Models.Responses;
 using Blackbird.Applications.Sdk.Common;
@@ -161,13 +162,6 @@ namespace Apps.Widn.Actions
             }
 
             return segments;
-        }
-
-        private class TranslationUnit
-        {
-            public string ID { get; set; }
-            public string Source { get; set; }
-            public string Target { get; set; }
         }
 
     }
