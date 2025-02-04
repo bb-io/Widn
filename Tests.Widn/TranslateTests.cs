@@ -26,4 +26,16 @@ public class TranslateTests : TestBase
 
         Assert.IsNotNull(result, "Response should not be null");
     }
+
+    [TestMethod]
+    public async Task GetQuality_ReturnsValues()
+    {
+        var action = new QualityActions(InvocationContext, FileManager);
+        var input = new QualityEvaluateRequest { SourceText = "Dogs are loyal companions who bring joy and love into our lives.", 
+            TargetText = "Los perros son compañeros leales que traen alegría y amor a nuestras vidas.", ReferenceText = "Hi" };
+        var result = await action.GetQuality(input);
+
+        var firstSegment = result.Segments.First();
+        Console.WriteLine($"Segment score: {firstSegment.Score}");
+    }
 }
