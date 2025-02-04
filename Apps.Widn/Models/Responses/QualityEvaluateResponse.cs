@@ -14,9 +14,9 @@ namespace Apps.Widn.Models.Responses
         [Display("Segments")]
         public IEnumerable<SegmentQuality> Segments { get; set; }
 
-        [JsonProperty("score")]
-        [Display("Score")]
-        public double? Score { get; set; }
+        //[JsonProperty("score")]
+        //[Display("Score")]
+        //public double? Score { get; set; }
     }
     public class SegmentQuality
     {
