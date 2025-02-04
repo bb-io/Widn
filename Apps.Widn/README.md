@@ -24,6 +24,11 @@ Before you can connect you need to make sure that:
 
 ## Actions
 
+### Quality Estimation
+
+- **Estimate quality** estimates the quality of the translation.
+- **Estimate XLIFF quality** Evaluates the quality of a translation from an XLIFF file.
+
 ### Translation 
 
 - **Translate text** translates plain text.

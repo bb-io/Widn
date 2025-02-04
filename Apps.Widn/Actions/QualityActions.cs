@@ -65,7 +65,7 @@ namespace Apps.Widn.Actions
         }
 
 
-        [Action("Estimate XLIFF Quality", Description = "Evaluates the quality of a translation from an XLIFF file")]
+        [Action("Estimate XLIFF quality", Description = "Evaluates the quality of a translation from an XLIFF file")]
         public async Task<QualityEvaluateResponse> EstimateQualityXliff([ActionParameter] QualityEvaluateXliffRequest input)
         {
             if (input.File == null)
