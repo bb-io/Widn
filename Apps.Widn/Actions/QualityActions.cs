@@ -8,6 +8,7 @@ using Apps.Widn.Models.Requests;
 using Apps.Widn.Models.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
+using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
@@ -27,6 +28,14 @@ namespace Apps.Widn.Actions
         [Action("Estimate quality", Description = "Evaluates the quality of a translation")]
         public async Task<QualityEvaluateResponse> GetQuality([ActionParameter] QualityEvaluateRequest input)
         {
+            if (string.IsNullOrWhiteSpace(input.SourceText))
+                throw new PluginMisconfigurationException("Source Text cannot be null or empty. Please check your input");
+
+            if (string.IsNullOrWhiteSpace(input.TargetText))
+                throw new PluginMisconfigurationException("Target Text cannot be null or empty. Please check your input");
+
+            if (string.IsNullOrWhiteSpace(input.ReferenceText))
+                throw new PluginMisconfigurationException("Reference Text cannot be null or empty. Please check your input");
 
             var requestBody = new
             {
@@ -44,10 +53,11 @@ namespace Apps.Widn.Actions
 
             var restRequest = new RestRequest("/quality/evaluate", Method.Post);
             restRequest.AddJsonBody(requestBody);
-            var response = await Client.ExecuteWithErrorHandling<QualityEvaluateResponse>(restRequest);
+            var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
+            var score = response.Segments;
 
-            return response;
+            double finalScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
+            return new QualityEvaluateResponse { Score = finalScore };
         }
-
     }
 }
