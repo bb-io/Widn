@@ -1,15 +1,9 @@
-﻿using Apps.Widn.DataSources;
+﻿using System.Text.Json.Serialization;
+using Apps.Widn.DataSources;
 using Apps.Widn.DataSources.Enums;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Dynamic;
-using Blackbird.Applications.Sdk.Common.Files;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Apps.Widn.Models.Requests
 {

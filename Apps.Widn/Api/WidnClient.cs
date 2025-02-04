@@ -32,7 +32,7 @@ public class WidnClient : BlackBirdRestClient
     }
 
     protected override Exception ConfigureErrorException(RestResponse response)
-    {
+    {        
         if (response.Content is null)
         {
             return new PluginApplicationException($"Error: {response.ErrorMessage}");
@@ -51,7 +51,7 @@ public class WidnClient : BlackBirdRestClient
             return new PluginMisconfigurationException(fieldsMessage);
         }
 
-        return new PluginApplicationException($"Error: {response.ErrorMessage}");
+        return new PluginApplicationException($"Error message: {error.Message}");
 
     }
 
