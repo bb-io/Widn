@@ -78,7 +78,7 @@ namespace Apps.Widn.Actions
 
             var segments = ExtractSegmentsFromXliff(fileStream);
             if (segments == null || !segments.Any())
-                throw new PluginMisconfigurationException("No trans-units found in the provided XLIFF file.");
+                throw new PluginMisconfigurationException("No segments found in the provided XLIFF file. Please check the input file");
 
             var requestBody = new
             {
