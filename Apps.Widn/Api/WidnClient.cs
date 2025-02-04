@@ -32,34 +32,27 @@ public class WidnClient : BlackBirdRestClient
     }
 
     protected override Exception ConfigureErrorException(RestResponse response)
-    {
-        try
-        {
-            if (response.Content is null)
-            {
-                return new PluginApplicationException($"Error: {response.ErrorMessage}");
-            }
-
-            var error = JsonConvert.DeserializeObject<Error>(response.Content, JsonSettings);
-
-            if (response.StatusCode == HttpStatusCode.Forbidden)
-            {
-                return new PluginMisconfigurationException("Please sign up for an API subscription or check your access.");
-            }
-
-            if (error.Fields != null && error.Fields.Any())
-            {
-                var fieldsMessage = string.Join(", ", error.Fields.Values.Select(x => x.Message));
-                return new PluginMisconfigurationException(fieldsMessage);
-            }
-
-            return new PluginApplicationException($"Error: {response.ErrorMessage}");
-        }
-        catch (Exception ex)
+    {        
+        if (response.Content is null)
         {
             return new PluginApplicationException($"Error: {response.ErrorMessage}");
-
         }
+
+        var error = JsonConvert.DeserializeObject<Error>(response.Content, JsonSettings);
+
+        if (response.StatusCode == HttpStatusCode.Forbidden)
+        {
+            return new PluginMisconfigurationException("Please sign up for an API subscription or check your access.");
+        }
+
+        if (error.Fields != null && error.Fields.Any())
+        {
+            var fieldsMessage = string.Join(", ", error.Fields.Values.Select(x => x.Message));
+            return new PluginMisconfigurationException(fieldsMessage);
+        }
+
+        return new PluginApplicationException($"Error message: {error.Message}");
+
     }
 
     public async Task<List<T>> Paginate<T>(RestRequest request)
