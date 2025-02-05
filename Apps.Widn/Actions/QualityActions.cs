@@ -110,8 +110,18 @@ namespace Apps.Widn.Actions
         {
             if (input.File == null)
                 throw new PluginMisconfigurationException("XLIFF file cannot be null. Please provide a valid file.");
-            
-            var fileStream = await _fileManagementClient.DownloadAsync(input.File);
+
+            if (string.IsNullOrWhiteSpace(input.File.Url))
+                throw new PluginMisconfigurationException("File URL is missing in the provided FileReference.");
+
+            var downloadRequest = new RestRequest(input.File.Url);
+            var downloadResponse = await Client.ExecuteAsync(downloadRequest);
+
+            if (!downloadResponse.IsSuccessStatusCode)
+                throw new PluginMisconfigurationException($"Could not download your file; Code: {downloadResponse.StatusCode}");
+
+
+            var fileStream = new MemoryStream(downloadResponse.RawBytes);
 
             var segments = ExtractSegmentsFromXliff(fileStream);
             if (segments == null || !segments.Any())
