@@ -28,16 +28,35 @@ public class TranslateTests : TestBase
     }
 
     [TestMethod]
-    public async Task GetQuality_ReturnsValues()
+    public async Task EvaluateQuality_ReturnsValues()
     {
         var action = new QualityActions(InvocationContext, FileManager);
-        var input = new QualityEvaluateRequest
+        var input1 = new LanguageOptions
         {
             SourceText = "Dogs are loyal companions who bring joy and love into our lives.",
             TargetText = "Los perros son compañeros leales que traen alegría y amor a nuestras vidas.",
+        };
+        var input2 = new QualityEvaluateRequest
+        {
             ReferenceText = "Hi"
         };
-        var result = await action.GetQuality(input);
+        var result = await action.EvaluateQuality(input1, input2);
+        Assert.IsNotNull(result);
+        Console.WriteLine($"Final Score: {result.Score}");
+        Assert.IsTrue(result.Score > 0);
+    }
+
+    [TestMethod]
+    public async Task EstimateQuality_ReturnsValues()
+    {
+        var action = new QualityActions(InvocationContext, FileManager);
+        var input1 = new LanguageOptions
+        {
+            SourceText = "Dogs are loyal companions who bring joy and love into our lives.",
+            TargetText = "Los perros son compañeros leales que traen alegría y amor a nuestras vidas.",
+        };
+  
+        var result = await action.EstimateQuality(input1, "mqm-qe");
         Assert.IsNotNull(result);
         Console.WriteLine($"Final Score: {result.Score}");
         Assert.IsTrue(result.Score > 0);
@@ -47,10 +66,9 @@ public class TranslateTests : TestBase
     public async Task GetQualityXLIFF_ReturnsValues()
     {
         var action = new QualityActions(InvocationContext, FileManager);
-        var input = new QualityEvaluateXliffRequest
+        var input = new FileRequest
         {
             File = new FileReference { Name = "translated.xliff" },
-            ReferenceText = "Hi"
         };
         var result = await action.EstimateQualityXliff(input);
         Assert.IsNotNull(result);
