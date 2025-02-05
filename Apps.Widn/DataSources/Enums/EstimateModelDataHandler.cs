@@ -12,7 +12,7 @@ namespace Apps.Widn.DataSources.Enums
     {
         public IEnumerable<DataSourceItem> GetData() => new List<DataSourceItem>()
         {
-            new("mqm-qe", "Anthill"),
+            new("mqm-qe", "Mqm-qe"),
             new("xcomet-xl", "Xcomet-xl")
         };
     }

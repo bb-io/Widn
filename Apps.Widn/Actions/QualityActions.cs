@@ -106,7 +106,8 @@ namespace Apps.Widn.Actions
 
 
         [Action("Estimate XLIFF translation quality", Description = "Estimates the quality of a translation from an XLIFF file")]
-        public async Task<QualityResponse> EstimateQualityXliff([ActionParameter] FileRequest input, [ActionParameter][StaticDataSource(typeof(EstimateModelDataHandler))] string model)
+        public async Task<QualityResponse> EstimateQualityXliff([ActionParameter] FileRequest input, 
+            [ActionParameter][StaticDataSource(typeof(EstimateModelDataHandler))][Display("Model")] string model)
         {
             if (input.File == null)
                 throw new PluginMisconfigurationException("XLIFF file cannot be null. Please provide a valid file.");

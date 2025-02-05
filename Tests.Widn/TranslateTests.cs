@@ -70,7 +70,7 @@ public class TranslateTests : TestBase
         {
             File = new FileReference { Name = "translated.xliff" },
         };
-        var result = await action.EstimateQualityXliff(input);
+        var result = await action.EstimateQualityXliff(input, "mqm-qe");
         Assert.IsNotNull(result);
         Console.WriteLine($"Final Score: {result.Score}");
         Assert.IsTrue(result.Score > 0);
