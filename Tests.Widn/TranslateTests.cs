@@ -55,8 +55,9 @@ public class TranslateTests : TestBase
             SourceText = "Dogs are loyal companions who bring joy and love into our lives.",
             TargetText = "Los perros son compañeros leales que traen alegría y amor a nuestras vidas.",
         };
-  
-        var result = await action.EstimateQuality(input1, "mqm-qe");
+
+        var input2 = new EstimateModelOption {Model= "mqm-qe" };
+        var result = await action.EstimateQuality(input1, input2);
         Assert.IsNotNull(result);
         Console.WriteLine($"Final Score: {result.Score}");
         Assert.IsTrue(result.Score > 0);
@@ -70,7 +71,8 @@ public class TranslateTests : TestBase
         {
             File = new FileReference { Name = "translated.xliff" },
         };
-        var result = await action.EstimateQualityXliff(input, "mqm-qe");
+        var input2 = new EstimateModelOption { Model = "mqm-qe" };
+        var result = await action.EstimateQualityXliff(input, input2);
         Assert.IsNotNull(result);
         Console.WriteLine($"Final Score: {result.Score}");
         Assert.IsTrue(result.Score > 0);

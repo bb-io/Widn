@@ -70,7 +70,7 @@ namespace Apps.Widn.Actions
 
 
         [Action("Estimate translation quality", Description = "Estimate the quality of a translation")]
-        public async Task<QualityResponse> EstimateQuality([ActionParameter] LanguageOptions option, [ActionParameter][StaticDataSource(typeof(EstimateModelDataHandler))] string model)
+        public async Task<QualityResponse> EstimateQuality([ActionParameter] LanguageOptions option, [ActionParameter] EstimateModelOption model)
         {
             if (string.IsNullOrWhiteSpace(option.SourceText))
                 throw new PluginMisconfigurationException("Source Text cannot be null or empty. Please check your input");
@@ -78,7 +78,7 @@ namespace Apps.Widn.Actions
             if (string.IsNullOrWhiteSpace(option.TargetText))
                 throw new PluginMisconfigurationException("Target Text cannot be null or empty. Please check your input");
 
-            if (string.IsNullOrWhiteSpace(model))
+            if (string.IsNullOrWhiteSpace(model.Model))
                 throw new PluginMisconfigurationException("Model input cannot be null or empty. Please check your input");
 
             var requestBody = new
@@ -91,7 +91,7 @@ namespace Apps.Widn.Actions
                         targetText = option.TargetText,
                     }
                 },
-                model = model
+                model = model.Model
             };
 
             var restRequest = new RestRequest("/quality/estimate", Method.Post);
@@ -106,8 +106,7 @@ namespace Apps.Widn.Actions
 
 
         [Action("Estimate XLIFF translation quality", Description = "Estimates the quality of a translation from an XLIFF file")]
-        public async Task<QualityResponse> EstimateQualityXliff([ActionParameter] FileRequest input, 
-            [ActionParameter][StaticDataSource(typeof(EstimateModelDataHandler))][Display("Model")] string model)
+        public async Task<QualityResponse> EstimateQualityXliff([ActionParameter] FileRequest input, [ActionParameter] EstimateModelOption model)
         {
             if (input.File == null)
                 throw new PluginMisconfigurationException("XLIFF file cannot be null. Please provide a valid file.");
@@ -125,7 +124,7 @@ namespace Apps.Widn.Actions
                     sourceText = segment.Source,
                     targetText = segment.Target,
                 }).ToArray(),
-                model = model ??"xcomet-xl"
+                model = model.Model ??"xcomet-xl"
             };
 
             var restRequest = new RestRequest("/quality/estimate", Method.Post);
