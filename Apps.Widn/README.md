@@ -26,8 +26,9 @@ Before you can connect you need to make sure that:
 
 ### Quality Estimation
 
-- **Estimate translation quality** evaluates the quality of a translation
-- **Estimate XLIFF translation quality** evaluates the quality of a translation from an XLIFF file.
+- **Evaluate translation quality** evaluates the quality of a translation. Requires a source, target language and  reference text.
+- **Estimate XLIFF translation quality** estimates the quality of a translation from an XLIFF file
+- **Estimate translation quality**  estimate the quality of a translation
 
 ### Translation 
 

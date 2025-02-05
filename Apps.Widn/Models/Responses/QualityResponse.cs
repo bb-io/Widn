@@ -10,13 +10,10 @@ using Newtonsoft.Json;
 namespace Apps.Widn.Models.Responses
 {
 
-    public class QualityEvaluateResponse
+    public class QualityResponse
     {
         [Display("Score")]
         public double Score { get; set; }
-
-        [Display("XLIFF file")]
-        public FileReference File { get; set; }
     }
     public class QualityEvaluate
     {
