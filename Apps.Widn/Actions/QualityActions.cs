@@ -155,7 +155,15 @@ namespace Apps.Widn.Actions
 
             using (var reader = new StreamReader(inputStream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, leaveOpen: true))
             {
-                var xliffDocument = XDocument.Load(reader);
+                XDocument xliffDocument;
+                try
+                {
+                    xliffDocument = XDocument.Load(reader);
+                }
+                catch (Exception ex)
+                {
+                    throw new PluginMisconfigurationException("Failed to proceed the input file. Please ensure that the file is a valid XLIFF file.");
+                }
 
                 XNamespace ns = xliffDocument.Root.GetDefaultNamespace();
 
