@@ -38,7 +38,7 @@ public class TranslateTests : TestBase
         };
         var input2 = new QualityEvaluateRequest
         {
-            ReferenceText = "Hi"
+            ReferenceText = "Hello"
         };
         var result = await action.EvaluateQuality(input1, input2);
         Assert.IsNotNull(result);

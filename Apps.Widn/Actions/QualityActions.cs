@@ -157,6 +157,11 @@ namespace Apps.Widn.Actions
             {
                 var xliffDocument = XDocument.Load(reader);
 
+                if (xliffDocument.Root == null || xliffDocument.Root.Name.LocalName.ToLower() != "xliff")
+                {
+                    throw new PluginMisconfigurationException("Invalid file format. The provided file does not appear to be a valid XLIFF file. Please check the input file");
+                }
+
                 XNamespace ns = xliffDocument.Root.GetDefaultNamespace();
 
                 var transUnits = xliffDocument.Descendants(ns + "trans-unit");
