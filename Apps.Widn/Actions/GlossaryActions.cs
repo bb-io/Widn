@@ -29,7 +29,7 @@ public class GlossaryActions : WidnInvocable
         _fileManagementClient = fileManagementClient;
     }
 
-    [Action("Export glossary", Description = "Export glossary")]
+    [Action("Export glossary", Description = "Exports a glossary file to use with other applications")]
     public async Task<ExportGlossaryResponse> ExportGlossary([ActionParameter] ExportGlossaryRequest input)
     {
         var endpointGlossaryData = $"/glossary/{input.GlossaryId}/item";
@@ -70,7 +70,7 @@ public class GlossaryActions : WidnInvocable
         };
     }
 
-    [Action("Import glossary", Description = "Import glossary")]
+    [Action("Import glossary", Description = "Imports a glossary that was exported from a different app")]
     public async Task ImportGlossary([ActionParameter] ImportGlossaryRequest input)
     {
         var endpointGlossary = $"/glossary/{input.GlossaryId}";

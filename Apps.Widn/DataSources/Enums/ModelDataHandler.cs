@@ -12,9 +12,9 @@ namespace Apps.Widn.DataSources.Enums
     {
         public IEnumerable<DataSourceItem> GetData() => new List<DataSourceItem>()
         {
-            new("anthill", "Anthill"),
-            new("sugarloaf", "Sugarloaf"),
-            new("vesuvius", "Vesuvius"),
+            new("anthill", "Anthill (fastest)"),
+            new("sugarloaf", "Sugarloaf (balance of speed & quality)"),
+            new("vesuvius", "Vesuvius (best model, for longer content)"),
         };
     }
 }

@@ -16,7 +16,7 @@ namespace Apps.Widn.Actions;
 [ActionList]
 public class TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : WidnInvocable(invocationContext)
 {
-    [Action("Translate text", Description = "Translate a text by using model")]
+    [Action("Translate text", Description = "Translates a text given the selected model")]
     public async Task<TextTranslationResponse> TranslateText([ActionParameter][Display("Source text")] string source, [ActionParameter] TranslateConfig config)
     {
         var request = new RestRequest("/translate", Method.Post);
@@ -36,7 +36,7 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
         };
     }
 
-    [Action("Translate file", Description = "Translate a file by using model")]
+    [Action("Translate file", Description = "Translate a file given the selected model")]
     public async Task<FileTranslationResponse> TranslateFile([ActionParameter] FileRequest fileRequest,
         [ActionParameter] TranslateConfig config)
     {
