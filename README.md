@@ -19,9 +19,22 @@
 
 ### **Translation**
 
-- **Translate Text** translates plain text.
+- **Translate text** translates plain text.
+- **Translate file** translates a file. Widn supports many different file types. See Widn documentation.
 
 Widn offers translation inputs for model selection, extra instructions, and a glossary.
+
+### **Glossary**
+
+- **Export glossary** exports a glossary file to use with other applications.
+- **Import glossary** imports a glossary that was exported from a different app.
+
+### **Quality**
+
+- **Evaluate translation quality** evaluates the quality of a translation given a reference text using `xcomet-xl`.
+- **Estimate translation quality** estimates the quality of a translation, without a reference text. You can choose between `xcomet-xl` and `mqm-qe`.
+- **Estimate XLIFF translation quality** estimates the quality of an entire translated XLIFF file with the same options as the previous action.
+
 
 ![Frame 1](image/README/Instructions.png)
 

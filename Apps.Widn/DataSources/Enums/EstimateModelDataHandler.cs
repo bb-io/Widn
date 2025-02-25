@@ -12,8 +12,8 @@ namespace Apps.Widn.DataSources.Enums
     {
         public IEnumerable<DataSourceItem> GetData() => new List<DataSourceItem>()
         {
-            new("mqm-qe", "Mqm-qe"),
-            new("xcomet-xl", "Xcomet-xl")
+            new("mqm-qe", "mqm-qe"),
+            new("xcomet-xl", "xcomet-xl")
         };
     }
 }
