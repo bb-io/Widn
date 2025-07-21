@@ -29,6 +29,8 @@ Before you can connect you need to make sure that:
 - **Evaluate translation quality** evaluates the quality of a translation. Requires a source, target language and  reference text.
 - **Estimate XLIFF translation quality** estimates the quality of a translation from an XLIFF file
 - **Estimate translation quality**  estimate the quality of a translation
+- **Review text** estimates or evaluates the quality of a translation. For estimation requires a source, target language and model input. For evaluation requires a source, target language and reference text input
+-  **Review** estimates XLIFF file (at the moment works only with XLIFF 2.2)
 
 ### Translation 
 

@@ -18,13 +18,16 @@ using Blackbird.Applications.Sdk.Common.Dictionaries;
 using Blackbird.Applications.Sdk.Common.Exceptions;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
+using Blackbird.Applications.SDK.Blueprints;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Blackbird.Filters.Transformations;
+using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using RestSharp;
 
 namespace Apps.Widn.Actions
 {
-    [ActionList]
+    [ActionList("Review")]
     public class QualityActions : WidnInvocable
     {
         private readonly IFileManagementClient _fileManagementClient;
@@ -64,8 +67,75 @@ namespace Apps.Widn.Actions
             var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
             var score = response.Segments;
 
-            double finalScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
+            var rawScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
+            float finalScore = Convert.ToSingle(rawScore);
             return new QualityResponse { Score = finalScore };
+        }
+
+        [BlueprintActionDefinition(BlueprintAction.ReviewText)]
+        [Action("Review text", Description = "(NEW) Estimates or evaluates the quality of a translation")]
+        public async Task<QualityResponse> ReviewText([ActionParameter] ReviewTextRequest input)
+        {
+            if (string.IsNullOrWhiteSpace(input.SourceText))
+                throw new PluginMisconfigurationException("Source text cannot be null or empty. Please check your input and try again");
+            if (string.IsNullOrWhiteSpace(input.TargetText))
+                throw new PluginMisconfigurationException("Target text cannot be null or empty. Please check your input and try again");
+
+            var (path, body) = BuildQualityRequest(input);
+
+            var restRequest = new RestRequest(path, Method.Post);
+            restRequest.AddJsonBody(body);
+            var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
+
+            var rawScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
+            return new QualityResponse { Score = Convert.ToSingle(rawScore) };
+        }
+
+        private (string path, object requestBody) BuildQualityRequest(ReviewTextRequest input)
+        {
+            bool doEvaluate = !string.IsNullOrWhiteSpace(input.ReferenceText);
+            bool doEstimate = !string.IsNullOrWhiteSpace(input.Model);
+
+            if (doEvaluate && doEstimate)
+                throw new PluginMisconfigurationException(
+                    "Please specify either Model (for estimate) or Reference text (for evaluate), not both.");
+            if (!doEvaluate && !doEstimate)
+                throw new PluginMisconfigurationException(
+                    "You must provide either Model (for estimate) or Reference text (for evaluate).");
+
+            if (doEstimate)
+            {
+                var body = new
+                {
+                    segments = new[]
+                    {
+                        new
+                        {
+                            sourceText = input.SourceText,
+                            targetText = input.TargetText
+                        }
+                    },
+                    model = input.Model!
+                };
+                return ("/quality/estimate", body);
+            }
+            else
+            {
+                var body = new
+                {
+                    segments = new[]
+                    {
+                        new
+                        {
+                            sourceText = input.SourceText,
+                            targetText = input.TargetText,
+                            referenceText = input.ReferenceText!
+                        }
+                    },
+                    model = "xcomet-xl"
+                };
+                return ("/quality/evaluate", body);
+            }
         }
 
 
@@ -99,10 +169,67 @@ namespace Apps.Widn.Actions
             var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
             var score = response.Segments;
 
-            double finalScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
+            var rawScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
+            float finalScore = Convert.ToSingle(rawScore);
             return new QualityResponse { Score = finalScore };
         }
 
+        [BlueprintActionDefinition(BlueprintAction.ReviewFile)]
+        [Action("Review", Description = "Estimates the quality of a translation from an XLIFF file")]
+        public async Task<FileQualityResponse> ReviewFile([ActionParameter] ReviewFileRequest input)
+        {
+            if (input.File == null)
+                throw new PluginMisconfigurationException("XLIFF file cannot be null.");
+
+            using var stream = await _fileManagementClient.DownloadAsync(input.File);
+            var content = await Transformation.Parse(stream, input.File.Name);
+
+            var segments = content.GetSegments()
+                .Where(s => !s.IsIgnorbale)
+                .ToList();
+
+            if (!segments.Any())
+                throw new PluginMisconfigurationException("No segments found in the provided XLIFF file.");
+
+            const int batchSize = 50;
+            var allScores = new List<float>();
+
+            foreach (var batch in segments
+                .Select((seg, idx) => new { seg, idx })
+                .GroupBy(x => x.idx / batchSize, x => x.seg)
+                .Select(g => g.ToList()))
+            {
+                var requestBody = new
+                {
+                    segments = batch.Select(s => new
+                    {
+                        sourceText = s.GetSource(),
+                        targetText = s.GetTarget()
+                    }).ToArray(),
+                    model = input.Model ?? "xcomet-xl"
+                };
+
+                var req = new RestRequest("/quality/estimate", Method.Post)
+                    .AddJsonBody(requestBody);
+
+                var resp = await Client.ExecuteWithErrorHandling<QualityEvaluate>(req);
+
+                allScores.AddRange(resp.Segments
+                    .Select(x => Convert.ToSingle(x.Score ?? 0)));
+            }
+
+            var (total, finalized, under, average, percentUnder) = ComputeMetrics(allScores, input.ScoreThreshold);
+
+            return new FileQualityResponse
+            {
+                File = input.File,
+                TotalSegmentsProcessed = total,
+                TotalSegmentsFinalized = finalized,
+                TotalSegmentsUnderThreshhold = under,
+                AverageMetric = average,
+                PercentageSegmentsUnderThreshhold = percentUnder
+            };
+        }
 
 
         [Action("Estimate XLIFF translation quality", Description = "Estimates the quality of a translation from an XLIFF file")]
@@ -141,7 +268,8 @@ namespace Apps.Widn.Actions
             restRequest.AddJsonBody(requestBody);
 
             var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
-            double finalScore = response.Segments?.Average(s => s.Score) ?? 0;
+            double rawAverage = response.Segments?.Average(s => s.Score) ?? 0;
+            float finalScore = Convert.ToSingle(rawAverage);
 
             return new QualityResponse
             {
@@ -187,5 +315,23 @@ namespace Apps.Widn.Actions
             return segments;
         }
 
+        private (int Total, int Finalized, int Under, float Average, float PercentageUnder)
+        ComputeMetrics(List<float> scores, double? thresholdNullable)
+        {
+            int total = scores.Count;
+            float average = total > 0 ? scores.Average() : 0f;
+
+            int under = 0;
+            if (thresholdNullable.HasValue)
+            {
+                float threshold = Convert.ToSingle(thresholdNullable.Value);
+                under = scores.Count(s => s < threshold);
+            }
+
+            int finalized = total - under;
+            float percentUnder = total > 0 ? under * 100f / total : 0f;
+
+            return (total, finalized, under, average, percentUnder);
+        }
     }
 }
