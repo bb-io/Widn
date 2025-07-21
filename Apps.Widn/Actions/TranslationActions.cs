@@ -18,7 +18,7 @@ using System.Net.Mime;
 
 namespace Apps.Widn.Actions;
 
-[ActionList]
+[ActionList("Translate")]
 public class TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : WidnInvocable(invocationContext)
 {
     [BlueprintActionDefinition(BlueprintAction.TranslateText)]
