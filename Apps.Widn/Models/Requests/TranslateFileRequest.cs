@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.SDK.Blueprints.Handlers;
-using Apps.DeepL.DataSourceHandlers.Enums;
+using Apps.Widn.DataSourceHandlers.Enums;
 
 namespace Apps.Widn.Models.Requests
 {

@@ -37,43 +37,7 @@ namespace Apps.Widn.Actions
         {
             _fileManagementClient = fileManagementClient;
         }
-
-        [Action("Evaluate translation quality", Description = "Evaluates the quality of a translation")]
-        public async Task<QualityResponse> EvaluateQuality([ActionParameter] LanguageOptions option, [ActionParameter] QualityEvaluateRequest input)
-        {
-            if (string.IsNullOrWhiteSpace(option.SourceText))
-                throw new PluginMisconfigurationException("Source Text cannot be null or empty. Please check your input");
-
-            if (string.IsNullOrWhiteSpace(option.TargetText))
-                throw new PluginMisconfigurationException("Target Text cannot be null or empty. Please check your input");
-
-            if (string.IsNullOrWhiteSpace(input.ReferenceText))
-                throw new PluginMisconfigurationException("Reference Text cannot be null or empty. Please check your input");
-
-            var requestBody = new
-            {
-                segments = new[]
-                {
-                    new
-                    {
-                        sourceText = option.SourceText,
-                        targetText = option.TargetText,
-                        referenceText = input.ReferenceText
-                    }
-                },
-                model = "xcomet-xl"
-            };
-
-            var restRequest = new RestRequest("/quality/evaluate", Method.Post);
-            restRequest.AddJsonBody(requestBody);
-            var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
-            var score = response.Segments;
-
-            var rawScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
-            float finalScore = Convert.ToSingle(rawScore);
-            return new QualityResponse { Score = finalScore };
-        }
-
+       
         [BlueprintActionDefinition(BlueprintAction.ReviewText)]
         [Action("Review text", Description = "(NEW) Estimates or evaluates the quality of a translation")]
         public async Task<QualityResponse> ReviewText([ActionParameter] ReviewTextRequest input)
@@ -138,46 +102,10 @@ namespace Apps.Widn.Actions
                 };
                 return ("/quality/evaluate", body);
             }
-        }
-
-
-        [Action("Estimate translation quality", Description = "Estimate the quality of a translation")]
-        public async Task<QualityResponse> EstimateQuality([ActionParameter] LanguageOptions option, [ActionParameter] EstimateModelOption model)
-        {
-            if (string.IsNullOrWhiteSpace(option.SourceText))
-                throw new PluginMisconfigurationException("Source Text cannot be null or empty. Please check your input");
-
-            if (string.IsNullOrWhiteSpace(option.TargetText))
-                throw new PluginMisconfigurationException("Target Text cannot be null or empty. Please check your input");
-
-            if (string.IsNullOrWhiteSpace(model.Model))
-                throw new PluginMisconfigurationException("Model input cannot be null or empty. Please check your input");
-
-            var requestBody = new
-            {
-                segments = new[]
-                {
-                    new
-                    {
-                        sourceText = option.SourceText,
-                        targetText = option.TargetText,
-                    }
-                },
-                model = model.Model
-            };
-
-            var restRequest = new RestRequest("/quality/estimate", Method.Post);
-            restRequest.AddJsonBody(requestBody);
-            var response = await Client.ExecuteWithErrorHandling<QualityEvaluate>(restRequest);
-            var score = response.Segments;
-
-            var rawScore = response.Segments?.FirstOrDefault()?.Score ?? 0;
-            float finalScore = Convert.ToSingle(rawScore);
-            return new QualityResponse { Score = finalScore };
-        }
+        }      
 
         [BlueprintActionDefinition(BlueprintAction.ReviewFile)]
-        [Action("Review", Description = "Estimates the quality of a translation from an XLIFF file")]
+        [Action("Review", Description = "(NEW) Estimates the quality of a translation from an XLIFF file")]
         public async Task<FileQualityResponse> ReviewFile([ActionParameter] ReviewFileRequest input)
         {
             if (input.File == null)
@@ -187,22 +115,13 @@ namespace Apps.Widn.Actions
             var content = await Transformation.Parse(stream, input.File.Name);
 
             var segments = content.GetSegments()
-                .Where(s => !s.IsIgnorbale)
+                .Where(s => !s.IsIgnorbale && s.State != SegmentState.Translated)
                 .ToList();
 
             if (!segments.Any())
                 throw new PluginMisconfigurationException("No segments found in the provided XLIFF file.");
 
-            const int batchSize = 50;
-            var allScores = new List<float>();
-
-            var finalizedSegmentsCount = 0;
-            var riskySegmentsCount = 0;
-
-            foreach (var batch in segments
-                .Select((seg, idx) => new { seg, idx })
-                .GroupBy(x => x.idx / batchSize, x => x.seg)
-                .Select(g => g.ToList()))
+            async Task<IEnumerable<float>> BatchReview(IEnumerable<Segment> batch)
             {
                 var requestBody = new
                 {
@@ -218,39 +137,42 @@ namespace Apps.Widn.Actions
                     .AddJsonBody(requestBody);
 
                 var resp = await Client.ExecuteWithErrorHandling<QualityEvaluate>(req);
+                return resp.Segments.Select(s => Convert.ToSingle(s.Score ?? 0));
+            }
 
-                var segmentsList = resp.Segments.ToList();
+            var segmentScores = await segments.Batch(50).Process(BatchReview);
 
-                for (int i = 0; i < batch.Count && i < segmentsList.Count; i++)
+            var finalizedSegmentsCount = 0;
+            var riskySegmentsCount = 0;
+            var allScores = new List<float>();
+
+            foreach (var (segment, score) in segmentScores)
+            {
+                allScores.Add(score);
+                if (input.ScoreThreshold.HasValue && score >= Convert.ToSingle(input.ScoreThreshold.Value))
                 {
-                    var score = Convert.ToSingle(segmentsList[i].Score ?? 0);
-                    allScores.Add(score);
-
-                    if (input.ScoreThreshold.HasValue && score >= input.ScoreThreshold.Value)
-                    {
-                        batch[i].State = SegmentState.Final;
-                        finalizedSegmentsCount++;
-                    }
-                    else
-                    {
-                        riskySegmentsCount++;
-                    }
+                    segment.State = SegmentState.Reviewed;
+                    finalizedSegmentsCount++;
+                }
+                else
+                {
+                    riskySegmentsCount++;
                 }
             }
 
             var updatedStream = content.Serialize().ToStream();
             var updatedFile = await _fileManagementClient.UploadAsync(
                 updatedStream,
-                input.File.ContentType,
-                input.File.Name
-            );
+                input.File.ContentType ?? "application/xliff+xml",
+                input.File.Name);
 
             var (total, finalized, under, average, percentUnder) = ComputeMetrics(allScores, input.ScoreThreshold);
 
             return new FileQualityResponse
             {
+                File = updatedFile,
                 TotalSegmentsProcessed = total,
-                TotalSegmentsFinalized = finalized, 
+                TotalSegmentsFinalized = finalized,
                 TotalSegmentsUnderThreshhold = under,
                 AverageMetric = average,
                 PercentageSegmentsUnderThreshhold = percentUnder

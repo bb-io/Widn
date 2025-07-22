@@ -18,7 +18,7 @@ using System.Net.Mime;
 
 namespace Apps.Widn.Actions;
 
-[ActionList("Translate")]
+[ActionList("Translation")]
 public class TranslationActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : WidnInvocable(invocationContext)
 {
     [BlueprintActionDefinition(BlueprintAction.TranslateText)]
@@ -95,79 +95,6 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
             }
         }
     }
-
-
-    [Action("Translate file", Description = "Translate a file given the selected model")]
-    public async Task<FileTranslationResponse> TranslateFile([ActionParameter] FileRequest fileRequest,
-        [ActionParameter] TranslateConfig config)
-    {
-        var file = fileRequest.File;
-        var supportedFormats = new[]
-        {
-            "csv", "dita", "ditamap", "docm", "docx", "dtd", "htm", "html", "icml",
-            "idml", "json", "markdown", "md", "mif", "mqxliff", "mxliff", "odp",
-            "ods", "odt", "ots", "po", "potm", "potx", "ppsm", "ppsx", "pptm",
-            "pptx", "properties", "resx", "sdlxliff", "strings", "stringsdict",
-            "tmx", "tsv", "vsdx", "xml", "yaml", "yml"
-        };
-        var fileExtension = Path.GetExtension(file.Name)?.TrimStart('.').ToLower();
-        if (string.IsNullOrEmpty(fileExtension) || !supportedFormats.Contains(fileExtension))
-        {
-            throw new PluginMisconfigurationException($"Unsupported file format: '{fileExtension}'. Supported formats are: {string.Join(", ", supportedFormats)}");
-        }
-
-        using var inputFileStream = await fileManagementClient.DownloadAsync(file);
-        using var memoryStream = new MemoryStream();
-        await inputFileStream.CopyToAsync(memoryStream);
-        memoryStream.Position = 0;
-
-        var uploadRequest = new RestRequest("/translate-file", Method.Post);
-        uploadRequest.AddFile("file", memoryStream.ToArray(), file.Name, file.ContentType);
-
-        var uploadResponse =
-        await Client.ExecuteWithErrorHandling<WidnFileUploadResponse>(uploadRequest);
-        var fileId = uploadResponse.FileId;
-        var encryptionKey = uploadResponse.EncryptionKey;
-
-        var translateReq = new RestRequest($"/translate-file/{fileId}/translate", Method.Post);
-        translateReq.AddJsonBody(new
-        {
-            config
-        });
-
-        await Client.ExecuteWithErrorHandling(translateReq);
-
-        while (true)
-        {
-            await Task.Delay(2000);
-            var statusReq = new RestRequest($"/translate-file/{fileId}", Method.Get);
-            var statusRes = await Client.ExecuteWithErrorHandling<FileTranslationStatusResponse>(statusReq);
-
-            if (statusRes.Status == "translated")
-                break;
-
-            if (statusRes.Status is "failed" or "cancelled")
-                throw new PluginApplicationException(statusRes.Error);
-
-            var otherAllowedStatusses = new List<string>() { "created", "preprocess", "translating", "rebuilding" };
-            if (!otherAllowedStatusses.Contains(statusRes.Status))
-                throw new Exception($"Unknown status: {statusRes.Status}");
-        }
-
-        var downloadReq = new RestRequest($"/translate-file/{fileId}/download", Method.Get);
-        downloadReq.AddQueryParameter("encryptionKey", encryptionKey);
-        var translatedFileBytes = Client.DownloadData(downloadReq);
-
-        using var outputStream = new MemoryStream(translatedFileBytes);
-        var uploadedFile = await fileManagementClient.UploadAsync(
-            outputStream,
-            file.ContentType,
-            file.Name
-        );
-
-        return new FileTranslationResponse { File = uploadedFile };
-    }
-
 
     private async Task<FileTranslationResponse> HandleInteroperableTransformation(Transformation content, TranslateFileRequest input)
     {
