@@ -14,6 +14,7 @@ namespace Tests.Widn;
 [TestClass]
 public class TranslateTests : TestBase
 {
+
     [TestMethod]
     public async Task ReviewEstimateOrEvaluate_ReturnsValues()
     {

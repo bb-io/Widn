@@ -104,10 +104,9 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
         if (content.SourceLanguage == null || content.TargetLanguage == null)
             throw new PluginMisconfigurationException("Source or target language not defined.");
 
-        async Task<IEnumerable<(Segment, string)>> BatchTranslate(IEnumerable<Segment> batch)
+        async Task<IEnumerable<string>> BatchTranslate(IEnumerable<Segment> batch)
         {
             var instructionsList = new List<string>();
-
             if (!string.IsNullOrWhiteSpace(input.Instructions))
                 instructionsList.Add(input.Instructions);
 
@@ -135,53 +134,58 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
 
             var request = new RestRequest("/translate", Method.Post).AddJsonBody(body);
             var response = await Client.ExecuteWithErrorHandling<TextTranslation>(request);
-
-            return batch.Zip(response.TargetText, (segment, translatedText) => (segment, translatedText));
+            return response.TargetText;
         }
 
         var segments = content.GetSegments()
-            .Where(s => !s.IsIgnorbale && (s.State == null || s.State == SegmentState.Initial))
+            .Where(s => !s.IsIgnorbale && s.IsInitial)
             .ToList();
 
+        Stream resultStream;
+        FileReference outFile;
+
         if (!segments.Any())
-            throw new PluginMisconfigurationException("No translatable segments found.");
-
-        var segmentTranslations = new List<(Segment, string)>();
-
-        foreach (var batch in segments.Batch(100))
         {
-            var batchResults = await BatchTranslate(batch);
-            segmentTranslations.AddRange(batchResults);
+            resultStream = content.Serialize().ToStream();
+            outFile = await fileManagementClient.UploadAsync(
+                resultStream,
+                input.File.ContentType ?? "application/xliff+xml",
+                input.File.Name);
         }
-
-
-        foreach (var (segment, translatedText) in segmentTranslations)
+        else
         {
-            if (!string.IsNullOrEmpty(translatedText))
+            var segmentTranslations = await segments.Batch(100).Process(BatchTranslate);
+
+            foreach (var (segment, translatedText) in segmentTranslations)
             {
-                segment.SetTarget(translatedText);
-                segment.State = SegmentState.Translated;
+                if (!string.IsNullOrEmpty(translatedText))
+                {
+                    segment.SetTarget(translatedText);
+                    segment.State = SegmentState.Translated;
+                }
             }
+
+            resultStream = input.OutputFileHandling == "original"
+                ? content.Target().Serialize().ToStream()
+                : content.Serialize().ToStream();
+
+            var fileName = input.OutputFileHandling switch
+            {
+                "original" => input.File.Name,
+                _ => input.File.Name.EndsWith(".xliff") || input.File.Name.EndsWith(".xlf")
+                    ? input.File.Name
+                    : input.File.Name + ".xliff"
+            };
+
+            var mediaType = input.OutputFileHandling == "original"
+                ? content.Target().OriginalMediaType
+                : "application/xliff+xml";
+
+            outFile = await fileManagementClient.UploadAsync(
+                resultStream,
+                mediaType,
+                fileName);
         }
-
-        var mediaType = input.OutputFileHandling == "original"
-            ? content.Target().OriginalMediaType
-            : MediaTypes.Xliff;
-
-        var resultStream = input.OutputFileHandling == "original"
-            ? content.Target().Serialize().ToStream()
-            : content.Serialize().ToStream();
-
-        var fileName = input.OutputFileHandling == "original"
-            ? input.File.Name
-            : input.File.Name.EndsWith(".xliff") || input.File.Name.EndsWith(".xlf")
-                ? input.File.Name
-                : input.File.Name + ".xliff";
-
-        var outFile = await fileManagementClient.UploadAsync(
-            resultStream,
-            mediaType,
-            fileName);
 
         return new FileTranslationResponse { File = outFile };
     }
