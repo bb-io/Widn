@@ -20,6 +20,8 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Blueprints;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Blackbird.Filters.Enums;
+using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
 using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.Office2010.ExcelAc;
@@ -194,6 +196,9 @@ namespace Apps.Widn.Actions
             const int batchSize = 50;
             var allScores = new List<float>();
 
+            var finalizedSegmentsCount = 0;
+            var riskySegmentsCount = 0;
+
             foreach (var batch in segments
                 .Select((seg, idx) => new { seg, idx })
                 .GroupBy(x => x.idx / batchSize, x => x.seg)
@@ -214,22 +219,44 @@ namespace Apps.Widn.Actions
 
                 var resp = await Client.ExecuteWithErrorHandling<QualityEvaluate>(req);
 
-                allScores.AddRange(resp.Segments
-                    .Select(x => Convert.ToSingle(x.Score ?? 0)));
+                var segmentsList = resp.Segments.ToList();
+
+                for (int i = 0; i < batch.Count && i < segmentsList.Count; i++)
+                {
+                    var score = Convert.ToSingle(segmentsList[i].Score ?? 0);
+                    allScores.Add(score);
+
+                    if (input.ScoreThreshold.HasValue && score >= input.ScoreThreshold.Value)
+                    {
+                        batch[i].State = SegmentState.Final;
+                        finalizedSegmentsCount++;
+                    }
+                    else
+                    {
+                        riskySegmentsCount++;
+                    }
+                }
             }
+
+            var updatedStream = content.Serialize().ToStream();
+            var updatedFile = await _fileManagementClient.UploadAsync(
+                updatedStream,
+                input.File.ContentType,
+                input.File.Name
+            );
 
             var (total, finalized, under, average, percentUnder) = ComputeMetrics(allScores, input.ScoreThreshold);
 
             return new FileQualityResponse
             {
-                File = input.File,
                 TotalSegmentsProcessed = total,
-                TotalSegmentsFinalized = finalized,
+                TotalSegmentsFinalized = finalized, 
                 TotalSegmentsUnderThreshhold = under,
                 AverageMetric = average,
                 PercentageSegmentsUnderThreshhold = percentUnder
             };
         }
+        
 
 
         [Action("Estimate XLIFF translation quality", Description = "Estimates the quality of a translation from an XLIFF file")]

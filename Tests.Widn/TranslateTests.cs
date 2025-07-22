@@ -88,7 +88,7 @@ public class TranslateTests : TestBase
         {
             ScoreThreshold = 0.7,
             File = new FileReference { Name = "contentful.html.xliff" },
-            Model = "mqm-qe" //or xcomet-xl,
+            Model = "mqm-qe" //or xcomet-xl,     
         };
 
         var result = await action.ReviewFile(input1);

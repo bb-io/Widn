@@ -30,12 +30,13 @@ Before you can connect you need to make sure that:
 - **Estimate XLIFF translation quality** estimates the quality of a translation from an XLIFF file
 - **Estimate translation quality**  estimate the quality of a translation
 - **Review text** estimates or evaluates the quality of a translation. For estimation requires a source, target language and model input. For evaluation requires a source, target language and reference text input
--  **Review** estimates XLIFF file (at the moment works only with XLIFF 2.2)
+- **Review** estimates XLIFF file (at the moment works only with XLIFF 2.2)
 
 ### Translation 
 
 - **Translate text** translates plain text.
 - **Translate file** translates the input file. Supported formats: csv, dita, ditamap, docm, docx, dtd, htm, html, icml, idml, json, markdown, md, mif, mqxliff, mxliff, odp, ods, odt, ots, po, potm, potx, ppsm, ppsx, pptm, pptx, properties, resx, sdlxliff, strings, stringsdict, tmx, tsv, vsdx, xml, yaml, yml.
+- **Translate** translates the input file. There is 2 strategies 'Widn' and 'Blackbird'. 'Widn' strategy uses native functionality. 'Blackbird' strategy uses Blackbird's translation the file and it is the default, to change it, please use property 'File Translation Strategy'. 
 
 Widen offers translation inputs for model selection, tone, extra instructions and a glossary.
 

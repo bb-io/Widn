@@ -19,7 +19,7 @@ using System.Linq;
 
 namespace Apps.Widn.Actions;
 
-[ActionList]
+[ActionList("Glossaries")]
 public class GlossaryActions : WidnInvocable
 {
     private readonly IFileManagementClient _fileManagementClient;
