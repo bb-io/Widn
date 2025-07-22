@@ -1,4 +1,5 @@
 ﻿using Blackbird.Applications.Sdk.Common;
+using Blackbird.Applications.SDK.Blueprints.Interfaces.Translate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Apps.Widn.Models.Responses
 {
-    public class TextTranslationResponse
+    public class TextTranslationResponse: ITranslateTextOutput
     {
-        [Display("Target text")]
-        public string TargetText { get; set; }
+        [Display("Translated text")]
+        public string TranslatedText { get; set; }
 
         [Display("Input characters")]
         public int InputCharacters { get; set; }

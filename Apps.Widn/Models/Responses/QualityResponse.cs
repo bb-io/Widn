@@ -5,15 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Files;
+using Blackbird.Applications.SDK.Blueprints.Interfaces.Review;
 using Newtonsoft.Json;
 
 namespace Apps.Widn.Models.Responses
 {
 
-    public class QualityResponse
+    public class QualityResponse : IReviewTextOutput
     {
         [Display("Score")]
-        public double Score { get; set; }
+        public float Score { get; set; }
     }
     public class QualityEvaluate
     {

@@ -29,6 +29,25 @@ namespace Tests.Widn
             }
         }
 
+        [TestMethod]
+        public async Task LanguageDataHandlerReturnsValues()
+        {
+            // Arrange
+            var handler = new LanguageDataHandler(InvocationContext);
+
+            // Act
+            var response = await handler.GetDataAsync(new DataSourceContext { SearchString = "" }, CancellationToken.None);
+
+            // Assert
+            Assert.IsNotNull(response, "Response should not be null");
+            Assert.IsTrue(response.Any(), "Response should contain at least one item");
+
+            foreach (var item in response)
+            {
+                Console.WriteLine($"{item.Value}: {item.DisplayName}");
+            }
+        }
+
 
     }
 }
