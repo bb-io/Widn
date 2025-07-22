@@ -115,11 +115,8 @@ namespace Apps.Widn.Actions
             var content = await Transformation.Parse(stream, input.File.Name);
 
             var segments = content.GetSegments()
-                .Where(s => !s.IsIgnorbale && s.State != SegmentState.Translated)
+                .Where(s => !s.IsIgnorbale && s.State == SegmentState.Translated)
                 .ToList();
-
-            if (!segments.Any())
-                throw new PluginMisconfigurationException("No segments found in the provided XLIFF file.");
 
             async Task<IEnumerable<float>> BatchReview(IEnumerable<Segment> batch)
             {
@@ -138,6 +135,19 @@ namespace Apps.Widn.Actions
 
                 var resp = await Client.ExecuteWithErrorHandling<QualityEvaluate>(req);
                 return resp.Segments.Select(s => Convert.ToSingle(s.Score ?? 0));
+            }
+
+            if (!segments.Any())
+            {
+                return new FileQualityResponse
+                {
+                    File = input.File, 
+                    TotalSegmentsProcessed = 0,
+                    TotalSegmentsFinalized = 0,
+                    TotalSegmentsUnderThreshhold = 0,
+                    AverageMetric = 0f,
+                    PercentageSegmentsUnderThreshhold = 0f
+                };
             }
 
             var segmentScores = await segments.Batch(50).Process(BatchReview);

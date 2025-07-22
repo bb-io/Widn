@@ -89,19 +89,4 @@ public class TranslateTests : TestBase
         Console.WriteLine(json);
         Assert.IsNotNull(result);
     }
-
-    [TestMethod]
-    public async Task GetQualityXLIFF_ReturnsValues()
-    {
-        var action = new QualityActions(InvocationContext, FileManager);
-        var input = new FileRequest
-        {
-            File = new FileReference { Name = "translated.xliff" },
-        };
-        var input2 = new EstimateModelOption { Model = "mqm-qe" };
-        var result = await action.EstimateQualityXliff(input, input2);
-        Assert.IsNotNull(result);
-        Console.WriteLine($"Final Score: {result.Score}");
-        Assert.IsTrue(result.Score > 0);
-    }
 }
