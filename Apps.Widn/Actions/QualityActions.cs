@@ -20,6 +20,7 @@ using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Blueprints;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
+using Blackbird.Filters.Constants;
 using Blackbird.Filters.Enums;
 using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
@@ -137,19 +138,6 @@ namespace Apps.Widn.Actions
                 return resp.Segments.Select(s => Convert.ToSingle(s.Score ?? 0));
             }
 
-            if (!segments.Any())
-            {
-                return new FileQualityResponse
-                {
-                    File = input.File, 
-                    TotalSegmentsProcessed = 0,
-                    TotalSegmentsFinalized = 0,
-                    TotalSegmentsUnderThreshhold = 0,
-                    AverageMetric = 0f,
-                    PercentageSegmentsUnderThreshhold = 0f
-                };
-            }
-
             var segmentScores = await segments.Batch(50).Process(BatchReview);
 
             var finalizedSegmentsCount = 0;
@@ -170,17 +158,11 @@ namespace Apps.Widn.Actions
                 }
             }
 
-            var updatedStream = content.Serialize().ToStream();
-            var updatedFile = await _fileManagementClient.UploadAsync(
-                updatedStream,
-                input.File.ContentType ?? "application/xliff+xml",
-                input.File.Name);
-
             var (total, finalized, under, average, percentUnder) = ComputeMetrics(allScores, input.ScoreThreshold);
 
             return new FileQualityResponse
             {
-                File = updatedFile,
+                File = await _fileManagementClient.UploadAsync(content.Serialize().ToStream(), MediaTypes.Xliff, content.XliffFileName),
                 TotalSegmentsProcessed = total,
                 TotalSegmentsFinalized = finalized,
                 TotalSegmentsUnderThreshhold = under,
