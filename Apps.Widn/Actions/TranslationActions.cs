@@ -5,7 +5,6 @@ using Apps.Widn.Models.Responses;
 using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Exceptions;
-using Blackbird.Applications.Sdk.Common.Files;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.SDK.Blueprints;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
@@ -14,7 +13,6 @@ using Blackbird.Filters.Enums;
 using Blackbird.Filters.Extensions;
 using Blackbird.Filters.Transformations;
 using RestSharp;
-using System.Net.Mime;
 
 namespace Apps.Widn.Actions;
 
@@ -163,7 +161,6 @@ public class TranslationActions(InvocationContext invocationContext, IFileManage
         content.TargetLanguage ??= input.TargetLanguage;
         return new FileTranslationResponse { File = await fileManagementClient.UploadAsync(content.Serialize().ToStream(), MediaTypes.Xliff, content.XliffFileName) };
     }
-
 
     private async Task<FileTranslationResponse> TranslateWithWidnNative(TranslateFileRequest input)
     {

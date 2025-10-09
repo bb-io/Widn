@@ -6,29 +6,17 @@ using Blackbird.Applications.Sdk.Common;
 using Blackbird.Applications.Sdk.Common.Actions;
 using Blackbird.Applications.Sdk.Common.Invocation;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Converters;
-using Blackbird.Applications.Sdk.Utils.Extensions.String;
 using Blackbird.Applications.SDK.Extensions.FileManagement.Interfaces;
 using RestSharp;
 using System.Net.Mime;
-using Blackbird.Applications.Sdk.Utils.Extensions.Files;
 using Blackbird.Applications.Sdk.Glossaries.Utils.Dtos;
-using DocumentFormat.OpenXml.Office2016.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
 using Blackbird.Applications.Sdk.Common.Exceptions;
-using System.Linq;
 
 namespace Apps.Widn.Actions;
 
 [ActionList("Glossaries")]
-public class GlossaryActions : WidnInvocable
+public class GlossaryActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : WidnInvocable(invocationContext)
 {
-    private readonly IFileManagementClient _fileManagementClient;
-
-    public GlossaryActions(InvocationContext invocationContext, IFileManagementClient fileManagementClient) : base(invocationContext)
-    {
-        _fileManagementClient = fileManagementClient;
-    }
-
     [Action("Export glossary", Description = "Exports a glossary file to use with other applications")]
     public async Task<ExportGlossaryResponse> ExportGlossary([ActionParameter] ExportGlossaryRequest input)
     {
@@ -65,7 +53,7 @@ public class GlossaryActions : WidnInvocable
         await using var stream = blackbirdGlossary.ConvertToTbx();
         return new ExportGlossaryResponse()
         {
-            File = await _fileManagementClient.UploadAsync(stream, MediaTypeNames.Application.Xml,
+            File = await fileManagementClient.UploadAsync(stream, MediaTypeNames.Application.Xml,
                 $"{responseGlossaryDetails.Name}.tbx")
         };
     }
@@ -75,7 +63,7 @@ public class GlossaryActions : WidnInvocable
     {
         var endpointGlossary = $"/glossary/{input.GlossaryId}";
 
-        await using var glossaryStream = await _fileManagementClient.DownloadAsync(input.File);
+        await using var glossaryStream = await fileManagementClient.DownloadAsync(input.File);
         var fileExtension = Path.GetExtension(input.File.Name);
 
         var existingGlossaryDetails = new GlossaryDto();
