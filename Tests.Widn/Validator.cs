@@ -1,37 +1,30 @@
-using System.Net;
-using Apps.Widn.Api;
 using Apps.Widn.Connections;
 using Blackbird.Applications.Sdk.Common.Authentication;
-using Blackbird.Applications.Sdk.Common.Exceptions;
-using Moq;
-using Moq.Protected;
-using RestSharp;
 using Tests.Widn.Base;
 
-namespace Tests.Widn
+namespace Tests.Widn;
+
+[TestClass]
+public class Validator : TestBase
 {
-    [TestClass]
-    public class Validator : TestBase
+    [TestMethod]
+    public async Task ValidatesCorrectConnection()
     {
-        [TestMethod]
-        public async Task ValidatesCorrectConnection()
-        {
-            var validator = new ConnectionValidator();
+        var validator = new ConnectionValidator();
 
-            var result = await validator.ValidateConnection(Creds, CancellationToken.None);
-            Console.WriteLine(result.Message);
-            Assert.IsTrue(result.IsValid);
-        }
+        var result = await validator.ValidateConnection(Creds, CancellationToken.None);
+        Console.WriteLine(result.Message);
+        Assert.IsTrue(result.IsValid);
+    }
 
-        [TestMethod]
-        public async Task DoesNotValidateIncorrectConnection()
-        {
-            var validator = new ConnectionValidator();
+    [TestMethod]
+    public async Task DoesNotValidateIncorrectConnection()
+    {
+        var validator = new ConnectionValidator();
 
-            var newCreds = Creds.Select(x => new AuthenticationCredentialsProvider(x.KeyName, x.Value + "_incorrect"));
-            var result = await validator.ValidateConnection(newCreds, CancellationToken.None);
-            Console.WriteLine(result.Message);
-            Assert.IsFalse(result.IsValid);
-        }
+        var newCreds = Creds.Select(x => new AuthenticationCredentialsProvider(x.KeyName, x.Value + "_incorrect"));
+        var result = await validator.ValidateConnection(newCreds, CancellationToken.None);
+        Console.WriteLine(result.Message);
+        Assert.IsFalse(result.IsValid);
     }
 }
